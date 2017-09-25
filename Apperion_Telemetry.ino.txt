@@ -1,0 +1,39 @@
+**THIS WRITE-UP REFERS TO THE PRE-EXISTING ITERATION OF THE TELEMETRY SYSTEM (1.0)**
+
+Summary:  The main sketch file of Apperion Telemetry. Utilizing MCP_Can library to read
+	  information from devices on CAN network and stores those values on SD Shield.
+	  While simultaneously writing to Genie display and transmitting to XBee shield.
+
+Includes: telem_library.h
+
+Methods:  setup(): Template hook for Arduino setup.  Setup initializes the serial, the Genie component,
+		   the XBee, the CAN bus, and the SD shield.
+
+	  loop(): Template hook for Arduino loop.  Sends a motor controller request message, read in 
+		  messages on the CAN bus, interpret the incoming data, calculate appropriate values,
+		  write values to the SD card, and send the data to the Genie shield.
+
+	  sendToScreen(): Writes calculated values to the Genie screen.
+
+	  init_variables(): Initializes variables to ensure that we're not reading 'garbage' data.
+
+	  interpretMessages(unsigned char canID, uint8_t buf[]): Interprets values of messages received via CAN.
+			   @param canId: the identifier of the can message received
+			   @param buf[]: the message buffer of the message received
+
+	  updateAuxilaryBatteryVoltage(): Updates the voltage of the auxiliary battery and output high when the
+					  voltage drops below the defined voltage threshold.
+
+	  updateNetCurrentAndPower(): Updates the net current and power values.  Should be called whenever battery current, 
+				      instantaneous voltage, battery power, array total current, or array total power.
+
+	  updateArrayTotals(): Updates the total and pwer coming from all subarrays.  Should be called every time a subarray
+				message is receieved.
+
+	  updateStateOfCharge(): Updates the state of charge depending on instantaneous voltage.  Should be called whenever 
+				 instantenous voltage is updated.
+
+	  updateMotorSpeed(): Updates the speed of the motor is MPH. Should be called every time motor RPM is updated.
+
+	  updateSubArrayValues(uint8_t arrayNumber, uint8_t buf[]): Updates the sub array values for a specific array, after a CAN
+								    message is recieved from that subarray.
