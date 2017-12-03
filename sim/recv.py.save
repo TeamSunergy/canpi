@@ -1,0 +1,28 @@
+import time
+import subprocess
+import can
+# Setup VCAN
+#subprocess.call(['modprobe vcan'])
+# Create a vcan network interface with a specific name
+#subprocess.call(['ip link add dev vcan0 type vcan'])
+#subprocess.call(['ip link set vcan0 up'])
+
+#can.rc('socketcan', 'vcan0', 128000)
+#bus = can.interface.Bus('socketcan', 'vcan0', 128000)
+bustype = 'socketcan_native'
+channel = 'vcan0'
+#bus = can.interface.Bus('vcan0', bustype='virtual')
+
+class everthing(self):
+	def __init__(self, interfaceType = "socketcan_native", interface = "vcan0"):
+		self.interfaceType = interfaceType
+		self.interface = interface
+		self.bus = can.interface.Bus(bustype = self.interfaceType, channel = self.interface)
+
+	def getMessage():
+		bus = can.interface.Bus(channel=channel, bustype=bustype)
+		return bus.recv(0.0)
+
+	def 
+
+UserInterface = everything()

@@ -17,8 +17,8 @@ channel = 'vcan0'
 class everything():
 
 	def __init__(self):
-
 		self.spamwriter = csv.writer(open("telemetry.csv", "w"), delimiter=" ", quotechar="|", quoting=csv.QUOTE_MINIMAL)
+		self.filters = [{}]
 
 	def getMessage(self):
 		bus = can.interface.Bus(channel=channel, bustype=bustype)
@@ -27,6 +27,7 @@ class everything():
 		self.spamwriter.writerow([message.timestamp, message.arbitration_id, str(message.is_extended_frame_format), message.is_error_frame, message.dlc, message.data])
 		return(message.timestamp)
 
+	def setFilters(self):
 
 thisThing = everything()
 
