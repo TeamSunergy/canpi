@@ -1,34 +1,34 @@
-import time
-import subprocess
+# RECV.py
+
 import can
-import csv
-# Setup VCAN
-#subprocess.call(['modprobe vcan'])
-# Create a vcan network interface with a specific name
-#subprocess.call(['ip link add dev vcan0 type vcan'])
-#subprocess.call(['ip link set vcan0 up'])
+import time
+import os
 
-#can.rc('socketcan', 'vcan0', 128000)
-#bus = can.interface.Bus('socketcan', 'vcan0', 128000)
-bustype = 'socketcan_native'
-channel = 'vcan0'
-#bus = can.interface.Bus('vcan0', bustype='virtual')
+print('\n\rCAN RECV test')
+print('Bring up can0...')
+os.system("sudo ip link set can0 up type can bitrate 500000")
+time.sleep(0.1)
 
-class everything():
+try:
+    bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
 
-	def __init__(self):
+except OSError:
+    print('Cannot find PiCAN board.')
+    exit()
 
-		self.spamwriter = csv.writer(open("telemetry.csv", "w"), delimiter=" ", quotechar="|", quoting=csv.QUOTE_MINIMAL)
+print('Ready')
 
-	def getMessage(self):
-		bus = can.interface.Bus(channel=channel, bustype=bustype)
-		message = bus.recv()
-		self.spamwriter.writerow(message)
-		self.spamwriter.writerow([message.timestamp, message.arbitration_id, str(message.is_extended_frame_format), message.is_error_frame, message.dlc, message.data])
-		return(message.timestamp)
+try:
+    while True:
+        message = bus.recv()
+        c = '{0:f} {1:x} {2:x}'.format(message.timestamp, message.arbitration_id, message.dlc)
+        s = ''
+        for i in range(message.dlc ):
+            s += '{0:x}'.format(message.data[i])
 
+        print(' {}'.format(c + s))
 
-thisThing = everything()
+except KeyboardInterrupt:
+    os.system("sudo ip link set can0 down")
+    print('\n\rKeyboard interrupt')
 
-while (True):
-	print(thisThing.getMessage())
