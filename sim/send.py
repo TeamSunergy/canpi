@@ -16,8 +16,9 @@ GPIO.output(led, True)
 
 count = 1
 
+# network settings
 channel = "can0"
-bitrate = 10000
+bitrate = 128000
 
 print("\n\rCAN Rx test")
 print("Bring up CAN0...")
