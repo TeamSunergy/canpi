@@ -4,13 +4,14 @@ import can
 import time
 import os
 
+channel = "can0"
 print('\n\rCAN RECV test')
-print('Bring up can0...')
-os.system("sudo ip link set can0 up type can bitrate 500000")
+print('Bring up ' + channel + '...')
+os.system("sudo ip link set " + channel + " up type can bitrate 500000")
 time.sleep(0.1)
 
 try:
-    bus = can.interface.Bus(channel='can0', bustype='socketcan_native')
+    bus = can.interface.Bus(channel=channel, bustype='socketcan_native')
 
 except OSError:
     print('Cannot find PiCAN board.')
@@ -30,6 +31,6 @@ try:
         print(time)
 
 except KeyboardInterrupt:
-    os.system("sudo ip link set can0 down")
+    os.system("sudo ip link set " + channel + " down")
     print('\n\rKeyboard interrupt')
 

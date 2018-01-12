@@ -11,7 +11,7 @@ import can
 #can.rc('socketcan', 'vcan0', 128000)
 #bus = can.interface.Bus('socketcan', 'vcan0', 128000)
 bustype = 'socketcan_native'
-channel = 'vcan0'
+channel = 'can0'
 #bus = can.interface.Bus('vcan0', bustype='virtual')
 
 def sendMessage(size, id, message = "deadbeef"):

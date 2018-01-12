@@ -16,20 +16,27 @@ GPIO.output(led, True)
 
 count = 1
 
-print('\n\rCAN Rx test')
-print('Bring up CAN0...')
+channel = "can0"
+bitrate = 10000
+
+print("\n\rCAN Rx test")
+print("Bring up CAN0...")
 
 # Bring up can0 interface at 500kbps
-os.system("sudo /sbin/ip link set can0 up type can bitrate 500000")
-time.sleep(0.1) # from simple_tx_test.py, but I don't know why its there
-print('Press CTRL-C to exit')
+if(channel == "can0"):
+	os.system("sudo /sbin/ip link set can0 up type can bitrate " + str(bitrate))
+else:
+	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 
-try: 
+time.sleep(0.1) # from simple_tx_test.py, but I don't know why its there
+print("Press CTRL-C to exit")
+
+try:
     bus = can.interface.Bus(
-            channel='can0', 
-            bustype='socketcan_native')
+            channel = channel,
+            bustype = "socketcan_native")
 except OSError:
-    print('Cannot find PiCAN board.')
+    print("Cannot find PiCAN board.")
     GPIO.output(led, False)
     exit()
 
@@ -39,8 +46,8 @@ try :
     while True:
         GPIO.output(led, True)
         msg = can.Message(
-                arbitration_id=0xc0ffee, 
-                data=[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07], 
+                arbitration_id=0xc0ffee,
+                data=[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07],
                 extended_id=False)
         bus.send(msg)
         count += 1
@@ -52,5 +59,5 @@ try :
 except KeyboardInterrupt:
     # Catch keyboard interrupt
     GPIO.output(led, False)
-    os.system("sudo /sbin/ip link set can0 down")
-    print('\n\rKeyboard interrupt')
+    os.system("sudo /sbin/ip link set " + channel + " down")
+    print("\n\rKeyboard interrupt")
