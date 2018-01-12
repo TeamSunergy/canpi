@@ -23,8 +23,8 @@ class everything():
 	def getMessage(self):
 		bus = can.interface.Bus(channel=channel, bustype=bustype)
 		message = bus.recv()
-		self.spamwriter.writerow(message)
-		self.spamwriter.writerow([message.timestamp, message.arbitration_id, str(message.is_extended_frame_format), message.is_error_frame, message.dlc, message.data])
+		#self.spamwriter.writerow(message)
+		#self.spamwriter.writerow([message.timestamp, message.arbitration_id, str(message.is_extended_frame_format), message.is_error_frame, message.dlc, message.data])
 		return(message.timestamp)
 
 

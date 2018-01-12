@@ -30,10 +30,8 @@ class orion:
 	def __init__(self):
 		interface = 'vcan0'
 
-	def getTemp(self, max, min):
-		sendMessage(8, 
-
-
+	#def getTemp(self, max, min):
+	#	sendMessage(8, 
 
 
 

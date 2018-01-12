@@ -7,6 +7,7 @@ import os
 
 
 print('\n\rVCAN SEND test')
+print('Initializing vcan0...')
 print('Bring up vcan0...')
 os.system("sudo modprobe vcan")
 os.system("sudo ip link add dev vcan0 type vcan")

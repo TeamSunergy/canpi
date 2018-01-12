@@ -21,12 +21,13 @@ print('Ready')
 try:
     while True:
         message = bus.recv()
-        c = '{0:f} {1:x} {2:x}'.format(message.timestamp, message.arbitration_id, message.dlc)
-        s = ''
-        for i in range(message.dlc ):
-            s += '{0:x}'.format(message.data[i])
-
-        print(' {}'.format(c + s))
+        time = message.timestamp
+        aid = message.arbitration_id
+        #for i in range(message.dlc ):
+        #    s += '{0:x}'.format(message.data[i])
+        #
+        #print(' {}'.format(c + s))
+        print(time)
 
 except KeyboardInterrupt:
     os.system("sudo ip link set can0 down")
