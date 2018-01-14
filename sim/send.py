@@ -17,19 +17,20 @@ GPIO.output(led, True)
 count = 1
 
 # network settings
-channel = "can0"
+channel = "vcan0"
 bitrate = 128000
 
 print("\n\rCAN Rx test")
-print("Bring up CAN0...")
+print("Bring up " + channel + "...")
 
-# Bring up can0 interface at 500kbps
+# Bring up $channel interface at $bitrate
 if(channel == "can0"):
 	os.system("sudo /sbin/ip link set can0 up type can bitrate " + str(bitrate))
 else:
 	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 
 time.sleep(0.1) # from simple_tx_test.py, but I don't know why its there
+		# ensures interface is up before trying to use it.
 print("Press CTRL-C to exit")
 
 try:
@@ -52,9 +53,9 @@ try :
                 extended_id=False)
         bus.send(msg)
         count += 1
-        time.sleep(0.1)
+        #time.sleep(0.1)
         GPIO.output(led, False)
-        time.sleep(0.1)
+        #time.sleep(0.1)
         print(count)
 
 except KeyboardInterrupt:
