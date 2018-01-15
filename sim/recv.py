@@ -2,6 +2,7 @@
 
 import can
 import time
+import datetime
 import os
 import csv
 import binascii
@@ -28,7 +29,8 @@ except OSError:
 	print('Cannot find PiCAN board.')
 	exit()
 
-logger = csv.writer(open("telem.csv", "w"), delimiter=",",
+now = datetime.datetime.now()
+logger = csv.writer(open(datetime.datetime.now().strftime("%Y%m%d%H%M") + ".csv", "w"), delimiter=",",
 	quotechar="|", quoting=csv.QUOTE_MINIMAL)
 
 logger.writerow(["timestamp"] + ["arbitration id"] + ["extended"] + ["remote"] + ["error"]
