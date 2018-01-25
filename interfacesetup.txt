@@ -1,0 +1,10 @@
+#
+sudo nano /boot/config.txt
+# Add these 3 lines to the end of file:
+dtparam=spi=on 
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25 
+dtoverlay=spi-bcm2835-overlay
+
+# Then reboot
+# Start interface at low baud rate because our cables currently suck
+sudo ip link set can0 up type can bitrate 56000
