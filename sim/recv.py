@@ -10,22 +10,24 @@ import binascii
 channel = "vcan0"
 bitrate = 128000
 
-print('\n\rCAN RECV test')
-print('Bring up ' + channel + '...')
+print("\n\rCAN RECV test")
+print("Bring up " + channel + "...")
 
 if (channel == "can0"):
 	os.system("sudo ip link set " + channel + " up type can bitrate " + str(bitrate) + " restart-ms 100")
 
 else:
+	os.system("modprobe vcan")
+	os.system("sudo ip link add dev " + channel + " type vcan")
 	os.system("sudo ip link set " + channel + " up type vcan")
 
 time.sleep(0.1)
 
 try:
-	bus = can.interface.Bus(channel=channel, bustype='socketcan_native')
+	bus = can.interface.Bus(channel=channel, bustype="socketcan_native")
 
 except OSError:
-	print('Cannot find PiCAN board.')
+	print("Cannot find PiCAN board.")
 	exit()
 
 logger = csv.writer(open("telem.csv", "w"), delimiter=",",
@@ -34,7 +36,7 @@ logger = csv.writer(open("telem.csv", "w"), delimiter=",",
 logger.writerow(["timestamp"] + ["arbitration id"] + ["extended"] + ["remote"] + ["error"]
 	+ ["dlc"] + ["data"])
 
-print('Ready')
+print("Ready")
 
 try:
 	while True:
@@ -64,4 +66,4 @@ try:
 
 except KeyboardInterrupt:
 	os.system("sudo ip link set " + channel + " down")
-	print('\n\rKeyboard interrupt')
+	print("\n\rKeyboard interrupt")
