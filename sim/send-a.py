@@ -11,16 +11,16 @@ import can
 #can.rc('socketcan', 'vcan0', 128000)
 #bus = can.interface.Bus('socketcan', 'vcan0', 128000)
 bustype = 'socketcan_native'
-channel = 'can0'
+channel = 'vcan0'
 #bus = can.interface.Bus('vcan0', bustype='virtual')
 
 def sendMessage(size, id, message = "deadbeef"):
 	bus = can.interface.Bus(channel=channel, bustype=bustype)
 	output = bytearray.fromhex(message)
 	size = size - len(message)
-	message += "0"*size
+	#message += "0"*size
 	print(size)
-	print(message)
+	print(output)
 #    output = [12, 1, 1, 1, 1, 1, 1, 1]
 	msg = can.Message(arbitration_id=0x00000020, data=output, extended_id=False)
 	bus.send(msg)
@@ -35,5 +35,5 @@ class orion:
 
 
 
-sendMessage(8, 0x10, "aaaaaaaa")
+sendMessage(8, 0x10, "0000000000000000")
 
