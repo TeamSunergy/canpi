@@ -29,8 +29,7 @@ if(channel == "can0"):
 else:
 	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 
-time.sleep(0.1) # from simple_tx_test.py, but I don't know why its there
-		# ensures interface is up before trying to use it.
+time.sleep(0.1) # from simple_tx_test.py, ensures interface is up before trying to use it.
 print("Press CTRL-C to exit")
 
 try:
@@ -48,7 +47,7 @@ try :
     while True:
         GPIO.output(led, True)
         msg = can.Message(
-                arbitration_id=0xc0ffee,
+                arbitration_id=0x7E0,
                 data=[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07],
                 extended_id=False)
         bus.send(msg)
