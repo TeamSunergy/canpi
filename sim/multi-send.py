@@ -14,7 +14,7 @@ GPIO.setwarnings(False)
 GPIO.setup(led, GPIO.OUT)
 GPIO.output(led, True)
 
-count = 0
+count = 1
 
 # network settings
 channel = "vcan0"
