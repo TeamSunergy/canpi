@@ -60,5 +60,5 @@ try :
 except KeyboardInterrupt:
     # Catch keyboard interrupt
     GPIO.output(led, False)
-    os.system("sudo /sbin/ip link set " + channel + " down")
+    #os.system("sudo /sbin/ip link set " + channel + " down")
     print("\n\rKeyboard interrupt")

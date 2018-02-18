@@ -2,6 +2,7 @@
 
 import can
 import asyncio
+import concurrent.futures
 import time
 import datetime
 import os
@@ -15,9 +16,8 @@ class canPI:
 	def __init__(self, channel = "vcan0", bitrate = 128000):
 		self.channel = channel
 		self.bitrate = bitrate
-		self.job = asyncio.get_event_loop()
-
-
+		self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=3,)
+		self.eventloop = asyncio.get_event_loop()
 		print("\n\rCAN RECV test")
 		print("Bring up " + channel + "...")
 
@@ -48,16 +48,21 @@ class canPI:
 
 		print("Ready")
 
+#		self.eventloop.run_until_complete(self.getMessage())
+		self.eventloop.close()
 
-	async def writeLog(self, message):
-		await (self.logger.writerow([message.timestamp] + [message.arbitration_id]
+
+	def writeLog(self, message):
+		self.logger.writerow([message.timestamp] + [message.arbitration_id]
 			+ [message.is_extended_id] + [message.is_remote_frame]
 			+ [message.is_error_frame] + [message.dlc]
-			+[message.data.hex()]))
+			+ [message.data.hex()])
 
-	def getMessage(self):
+	async def getMessage(self):
 		self.message = self.bus.recv()
-		self.job.run_until_complete(self.writeLog(self.message))
+		if (self.message is not None):
+			job = self.eventloop.run_in_executor(self.executor, self.writeLog, self.message)
+		self.eventloop.run_until_complete(job)
 		self.printMessage()
 
 	def printMessage(self):
@@ -89,10 +94,10 @@ class canPI:
         #
         #print(' {}'.format(c + s))
 try:
+
 	test = canPI(channel, bitrate)
 	while True:
 		test.getMessage()
-		test.writeLog()
 
 except KeyboardInterrupt:
 	test.destroy()
