@@ -14,7 +14,7 @@
  *    2) A string representation of a byte array.
  *
  *  The function returns a list of tuples:
- *    1) Each tuple will have a string in the first position and a number in the second. e.g. ("currentTemperature,16")
+ *    1) Each tuple will have a string in the first position and a number in the second. e.g. ("currentTemperature",16)
  *    2) The string represents the name of the item the number relates to. e.g. "currentTmperature"
  *    3) The number represents the value of item the string relates to.    e.g. 16
  *
