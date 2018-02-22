@@ -26,7 +26,7 @@ class canPI:
 			+ " restart-ms 100")
 
 		else:
-			os.system("modprobe vcan")
+			os.system("sudo modprobe vcan")
 			os.system("sudo ip link add dev " + self.channel + " type vcan")
 			os.system("sudo ip link set " + self.channel + " up type vcan")
 

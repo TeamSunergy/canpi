@@ -18,7 +18,7 @@ if (channel == "can0"):
 	os.system("sudo ip link set " + channel + " up type can bitrate " + str(bitrate) + " restart-ms 100")
 
 else:
-	os.system("modprobe vcan")
+	os.system("sudo modprobe vcan")
 	os.system("sudo ip link add dev " + channel + " type vcan")
 	os.system("sudo ip link set " + channel + " up type vcan")
 
