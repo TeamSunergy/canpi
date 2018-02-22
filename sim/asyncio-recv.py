@@ -1,4 +1,4 @@
-# RECV.py
+# asyncio-recv.py
 
 import can
 import asyncio
@@ -10,14 +10,22 @@ import csv
 import binascii
 channel = "vcan0"
 bitrate = 128000
+""" Recives and logs data from canbus.
+
+Recives data and uses Asyncio to handle logging asynchronous
+also uses concurrent.futres to make logging concurrent
+"""
 
 class canPI:
 
 	def __init__(self, channel = "vcan0", bitrate = 128000):
 		self.channel = channel
 		self.bitrate = bitrate
+		# generates a pool of a a maximum of three proccesses to handle any
+		# jobs that need to be run.
 		self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=3,)
 		self.eventloop = asyncio.get_event_loop()
+
 		print("\n\rCAN RECV test")
 		print("Bring up " + channel + "...")
 
@@ -62,7 +70,7 @@ class canPI:
 		self.message = self.bus.recv()
 		if (self.message is not None):
 			job = self.eventloop.run_in_executor(self.executor, self.writeLog, self.message)
-		self.eventloop.run_until_complete(job)
+			self.eventloop.run_until_complete(job)
 		self.printMessage()
 
 	def printMessage(self):
@@ -94,10 +102,7 @@ class canPI:
         #
         #print(' {}'.format(c + s))
 try:
-
 	test = canPI(channel, bitrate)
-	while True:
-		test.getMessage()
 
 except KeyboardInterrupt:
 	test.destroy()
