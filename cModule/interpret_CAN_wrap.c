@@ -1,7 +1,7 @@
 #include "/usr/include/python3.5/Python.h"
 #include "interpret_CAN.h"
 
-#define RET_LIST_MAX_LENGTH 8
+#define RET_LIST_MAX_LENGTH 32
 #define RET_STRING_MAX_LENGTH 32
 #define BYTE_BUFFER_MAX_LENGTH 8
 
