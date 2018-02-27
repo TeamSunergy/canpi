@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # RECV.py
 
 import can
@@ -17,18 +18,6 @@ class canPI:
 		self.bitrate = bitrate
 
 		print("\n\rCAN RECV test")
-		print("Bring up " + channel + "...")
-
-		if (channel == "can0"):
-			os.system("sudo ip link set " + self.channel + " up type can bitrate " + str(self.bitrate)
-			+ " restart-ms 100")
-
-		else:
-			os.system("modprobe vcan")
-			os.system("sudo ip link add dev " + self.channel + " type vcan")
-			os.system("sudo ip link set " + self.channel + " up type vcan")
-
-		time.sleep(0.1)
 
 		try:
 			self.bus = can.interface.Bus(channel=self.channel, bustype="socketcan_native")
@@ -63,7 +52,6 @@ class canPI:
 		print(self.message.data.hex())
 
 	def destroy(self):
-		os.system("sudo ip link set " + channel + " down")
 		print("\n\rKeyboard interrupt")
 
 # network settings

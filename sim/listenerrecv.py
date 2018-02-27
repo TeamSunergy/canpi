@@ -48,8 +48,10 @@ try:
 		#If buffered Read times out it returns an object of NoneType
 		# otherwise it returns a message with above attributes
 		if (message is not None):
-			print(message.timestamp)
-		print(message)
+			#print(message.timestamp)
+			print(message.data.hex())
+			print(message.data)
+		#print(message)
 
 
 

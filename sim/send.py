@@ -1,6 +1,5 @@
+#!/usr/bin/python3
 # SEND
-
-#!/usr/sbin/python3.5
 #github.com/skpang/PiCAN-Python-examples/blob/master/simple_tx_test.py
 
 import RPi.GPIO as GPIO
