@@ -20,14 +20,14 @@ count = 0
 channel = "vcan0"
 bitrate = 128000
 
-print("\n\rCAN Rx test")
-print("Bring up " + channel + "...")
+print("\n\rCAN Tx test")
+#print("Bring up " + channel + "...")
 
 # Bring up $channel interface at $bitrate
-if(channel == "can0"):
-	os.system("sudo /sbin/ip link set can0 up type can bitrate " + str(bitrate))
-else:
-	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
+#if(channel == "can0"):
+#	os.system("sudo /sbin/ip link set can0 up type can bitrate " + str(bitrate))
+#else:
+#	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 
 time.sleep(0.1) # from simple_tx_test.py, ensures interface is up before trying to use it.
 print("Press CTRL-C to exit")

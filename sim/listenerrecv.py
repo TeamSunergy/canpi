@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # RECV.py
 
 import can
@@ -9,20 +10,9 @@ import binascii
 
 # network settings
 channel = "vcan0"
-bitrate = 128000
+bitrate = 128000 # 128000 if useing can0
 
-print("\n\rCAN RECV test")
-print("Bring up " + channel + "...")
-
-#if (channel == "can0"):
-#	os.system("sudo ip link set " + channel + " up type can bitrate " + str(bitrate) + " restart-ms 100")
-
-#else:
-#	os.system("modprobe vcan")
-#	os.system("sudo ip link add dev " + channel + " type vcan")
-#	os.system("sudo ip link set " + channel + " up type vcan")
-
-time.sleep(0.1)
+print("CAN RECV test")
 
 try:
 	#Initalizes can bus
@@ -64,7 +54,6 @@ try:
 
 
 except KeyboardInterrupt:
-	#os.system("sudo ip link set " + channel + " down")
-	#Closes the notifer which closes the Listeners as well
+	# Closes the notifer which closes the Listeners as well
 	notifier.stop()
-	print("\n\rKeyboard interrupt")
+	print("Keyboard interrupt")
