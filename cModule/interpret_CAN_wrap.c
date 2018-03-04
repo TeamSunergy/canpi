@@ -26,9 +26,10 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   int* retVariableValues = (int*) malloc(RET_LIST_MAX_LENGTH*sizeof(int));
   uint8_t *byteBuffer = NULL;
   uint8_t canID = 0;
+  int strLength = 0;
 
   //Parse the arguments
-  PyArg_ParseTuple(args, "bs:interpretMessage", &canID, &byteBuffer); 
+  PyArg_ParseTuple(args, "bs#:interpretMessage", &canID, &byteBuffer, &strLength); 
 
   interpretMessage(canID, byteBuffer, retVariableNames, retVariableValues, &listLen);
 
