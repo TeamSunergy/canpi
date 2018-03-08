@@ -46,8 +46,8 @@ try :
     while True:
         GPIO.output(led, True)
         msg = can.Message(
-                arbitration_id=0x7E0,
-                data=[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07],
+                arbitration_id=0x1,
+                data=[0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44],
                 extended_id=False)
         bus.send(msg)
         count += 1
