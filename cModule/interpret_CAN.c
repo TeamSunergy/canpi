@@ -198,7 +198,13 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
 
       break;
     }
-    
+   
+    /*
+     *	NOTE:
+     *	  busCurrent and busVoltage should be interpreted as floats.
+     *	  Bus Current is in Amps.
+     *	  Bus Voltage is in Volts.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME2:
     {
       int busCurrent = 0;
@@ -214,6 +220,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
     
+    /*
+     *	NOTE:
+     *	  vehicleVelocity and motorVelocity should be interpreted as floats.
+     *	  Vehicle Velocity is in Meters per Seconds.
+     *	  Motor Velocity is in Rotations per Minute.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME3:
     {
       int vehicleVelocity = 0;
@@ -229,6 +241,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  phaseCCurrent and phaseBCurrent should be interpreted as floats.
+     *	  Phase C Current is in Amps Root Mean Squared.
+     *	  Phase B Current is in Amps Root Mean Squared.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME4:
     {
       int phaseCCurrent = 0;
@@ -243,7 +261,13 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       *numRetValues = 2;
       break;
     }
-
+    
+    /*
+     *	NOTE:
+     *	  Vd and Vq should be interpreted as floats.
+     *	  Vd is in Volts.
+     *	  Vq is in Volts.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME5:
     {
       int Vd = 0;
@@ -259,6 +283,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  Id and Iq should be interpreted as floats.
+     *	  Id is in Amps.
+     *	  Iq is in Amps.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME6:
     {
       int Id = 0;
@@ -274,6 +304,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  BEMFd and BEMFq should be interpreted as floats.
+     *	  BEMFd is in Volts.
+     *	  BEMFq is in Volts.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME7:
     {
       int BEMFd = 0;
@@ -289,6 +325,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  fifteenVSupply should be interpreted as a float.
+     *	  Fifteen V Supply is in Volts.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME8:
     {
       int fifteenVSupply = 0;
@@ -304,6 +345,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  threePointThreeVSupply and onePointNineVSupply should be interpreted as floats.
+     *	  Three Point Three V Supply is in Volts.
+     *	  One Point Three V Supply is in Volts.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME9:
     {
       int threePointThreeVSupply = 0;
@@ -319,12 +366,21 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	RESERVED
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME10:
     {
       *numRetValues = 0;
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  heatSinkTemp and motorTemp should be interpreted as floats.
+     *	  Heat Sink Temp is in Celsius.
+     *	  Motor Temp is in Celsius.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME11:
     {
       int heatSinkTemp = 0;
@@ -340,6 +396,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  DSPBoardTemp should be interpreted as a float.
+     *	  DSP Board Temp is in Celsius.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME12:
     {
       int unused = 0;
@@ -355,12 +416,21 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	RESERVED
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME13:
     {
       *numRetValues = 0;
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  DCBusAmpHours and odometer should be interpreted as floats.
+     *	  DCBusAmpHours is in Amp Hours.
+     *	  Odometer is in Meters.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME14:
     {
       int DCBusAmpHours = 0;
@@ -376,6 +446,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    /*
+     *	NOTE:
+     *	  slipSpeed should be interpreted as a float.
+     *	  Slip Speed is in Hertz.
+     */
     case CAN_ID_MOTOR_CONTROLLER_FRAME15:
     {
       int slipSpeed = 0;
