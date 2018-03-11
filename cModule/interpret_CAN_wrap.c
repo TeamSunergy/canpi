@@ -3,6 +3,7 @@
 
 #define RET_LIST_MAX_LENGTH 32
 #define RET_STRING_MAX_LENGTH 32
+#define RET_TYPE_MAX_LENGTH 8
 #define BYTE_BUFFER_MAX_LENGTH 8
 
 
@@ -24,6 +25,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   int listLen = 0;
   char** retVariableNames = (char**) malloc(RET_LIST_MAX_LENGTH*RET_STRING_MAX_LENGTH); 
   int* retVariableValues = (int*) malloc(RET_LIST_MAX_LENGTH*sizeof(int));
+  char ** retTypes = (char**) malloc(RET_LIST_MAX_LENGTH*RET_TYPE_MAX_LENGTH);
   uint8_t *byteBuffer = NULL;
   uint8_t canID = 0;
   int strLength = 0;
@@ -31,7 +33,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   //Parse the arguments
   PyArg_ParseTuple(args, "bs#:interpretMessage", &canID, &byteBuffer, &strLength); 
 
-  interpretMessage(canID, byteBuffer, retVariableNames, retVariableValues, &listLen);
+  interpretMessage(canID, byteBuffer, retVariableNames, retVariableValues, retTypes, &listLen);
 
   //Instantiate the Python list that will be returned
   PyObject *retList = PyList_New(listLen);
@@ -40,7 +42,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
 
   //Convert C arrays to a Python list of tuples
   for (int i = 0; i < listLen; i++) {
-    PyObject *tuple = Py_BuildValue("si", retVariableNames[i], retVariableValues[i]);
+    PyObject *tuple = Py_BuildValue("sis", retVariableNames[i], retVariableValues[i], retTypes[i]);
     if (!tuple) {
       Py_DECREF(tuple);
       return NULL;
@@ -52,6 +54,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   byteBuffer = NULL;
   free(retVariableNames);
   free(retVariableValues);
+  free(retTypes);
 
   return retList;
 }
