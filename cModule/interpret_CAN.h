@@ -6,8 +6,9 @@
 
 // Function Declarations
 //=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
-void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, int* numRetValues);
+void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, char** retType, int* numRetValues);
 void retreiveTwo32BitNums(uint8_t messageBuf[], int *num1, int *num2);
+void convertAndScaleIntToFloat(int *originalInt, float scale);
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // CAN Message ID Constants
@@ -56,6 +57,12 @@ void retreiveTwo32BitNums(uint8_t messageBuf[], int *num1, int *num2);
 #define BPS_PACK_INSTANTANEOUS_VOLTAGE_LOW_BYTE  3
 #define BPS_PACK_SUMMED_VOLTAGE_HIGH_BYTE 4
 #define BPS_PACK_SUMMED_VOLTAGE_LOW_BYTE  5
+#define BPS_HIGH_CELL_VOLTAGE_SCALE 0.0001f
+#define BPS_LOW_CELL_VOLTAGE_SCALE 0.0001f
+#define BPS_PACK_AMPHOURS_SCALE 0.1f
+#define BPS_PACK_CURRENT_SCALE 0.1f
+#define BPS_PACK_INSTANTANEOUS_VOLTAGE_SCALE 0.1f
+#define BPS_PACK_SUMMED_VOLTAGE_SCALE 0.01f
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //Motor Controller Definitions

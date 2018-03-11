@@ -5,7 +5,7 @@
  *  Converts a CANID and its associated byte buffer to a set of key-value pairs.
  *    With the keys being strings and the values being integers.
  */
-void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, int* numRetValues) {
+void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, char** retType,  int* numRetValues) {
   
   int bufLen = 0;
 
@@ -21,9 +21,36 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retValues[0] = tmpSum;
       retStr[1] = "Cake";
       retValues[1] = 9001;
+      retType[0] = "int";
+      retType[1] = "int";
       *numRetValues = 2;
+
       break;
     }
+
+  case 0x1:
+    {
+      bufLen = 2;
+      
+      int test1 = 0x41424344;
+      int test2 = 0x41424344;
+
+      float* tmp = &test1;
+
+      *tmp += 1;
+      test2 += 1;
+
+      retStr[0] = "floatVal";
+      retValues[0] = test1;
+      retStr[1] = "intVal";
+      retValues[1] = test2;
+      retType[0] = "float";
+      retType[1] = "int";
+      *numRetValues = 2;
+
+      break;
+    }
+
 
     /*
      *	Contains the battery high cell voltage and the battery low cell voltage. 
@@ -32,11 +59,16 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
     {
       int highVoltage = messageBuf[BPS_HIGH_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_HIGH_CELL_VOLTAGE_LOW_BYTE];  
       int lowVoltage = messageBuf[BPS_LOW_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_LOW_CELL_VOLTAGE_LOW_BYTE];
-      
+     
+      convertAndScaleIntToFloat(&highVoltage, BPS_HIGH_CELL_VOLTAGE_SCALE); 
+      convertAndScaleIntToFloat(&lowVoltage, BPS_LOW_CELL_VOLTAGE_SCALE); 
+
       retStr[0] = "bpsHighVoltage";
       retStr[1] = "bpsLowVoltage";
       retValues[0] = highVoltage;
       retValues[1] = lowVoltage;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -51,12 +83,17 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int packCycles = messageBuf[BPS_TOTAL_PACK_CYCLES_HIGH_BYTE] << 8 | messageBuf[BPS_TOTAL_PACK_CYCLES_LOW_BYTE];
       int packHealth = messageBuf[BPS_PACK_HEALTH_BYTE];
       
+      convertAndScaleIntToFloat(&packAmpHours, BPS_PACK_AMPHOURS_SCALE); 
+      
       retStr[0] = "packAmpHours";
       retStr[1] = "packTotalCycles";
       retStr[2] = "packHealth";
       retValues[0] = packAmpHours;
       retValues[1] = packCycles;
       retValues[2] = packHealth;
+      retType[0] = "float";
+      retType[1] = "int";
+      retType[2] = "int";
       *numRetValues = 3;
       break;
     }
@@ -79,6 +116,10 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retValues[1] = lowestCellTemperature;
       retValues[2] = averageCellTemperature;
       retValues[3] = internalBPSTemperature;
+      retType[0] = "int";
+      retType[1] = "int";
+      retType[2] = "int";
+      retType[3] = "int";
       *numRetValues = 4;
       break;
     }
@@ -92,12 +133,19 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int batteryPackInstantVoltage = messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_LOW_BYTE];
       int batteryPackSummedVoltage = messageBuf[BPS_PACK_SUMMED_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_SUMMED_VOLTAGE_LOW_BYTE];
 
+      convertAndScaleIntToFloat(&batteryPackCurrent, BPS_PACK_CURRENT_SCALE); 
+      convertAndScaleIntToFloat(&batteryPackInstantVoltage, BPS_PACK_INSTANTANEOUS_VOLTAGE_SCALE); 
+      convertAndScaleIntToFloat(&batteryPackSummedVoltage, BPS_PACK_SUMMED_VOLTAGE_SCALE); 
+      
       retStr[0] = "batteryPackCurrent";
       retStr[1] = "batteryPackInstantaneousVoltage";
       retStr[2] = "batteryPackSummedVoltage";
       retValues[0] = batteryPackCurrent;
       retValues[1] = batteryPackInstantVoltage;
       retValues[2] = batteryPackSummedVoltage;
+      retType[0] = "float";
+      retType[1] = "float";
+      retType[2] = "float";
       *numRetValues = 3;
       break;
     }
@@ -119,6 +167,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConTritiumID";
       retValues[0] = serialNumber;
       retValues[1] = tritiumID;
+      retType[0] = "int";
+      retType[1] = "int";
       *numRetValues = 2;
       break;
     }
@@ -194,6 +244,25 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retValues[16] = limitMotorCurrent;
       retValues[17] = limitOutputVoltagePWM;
 
+      retType[0] = "int";
+      retType[1] = "int";
+      retType[2] = "int";
+      retType[3] = "boolean";
+      retType[4] = "boolean";
+      retType[5] = "boolean";
+      retType[6] = "boolean";
+      retType[7] = "boolean";
+      retType[8] = "boolean";
+      retType[9] = "boolean";
+      retType[10] = "boolean";
+      retType[11] = "boolean";
+      retType[12] = "boolean";
+      retType[13] = "boolean";
+      retType[14] = "boolean";
+      retType[15] = "boolean";
+      retType[16] = "boolean";
+      retType[17] = "boolean";
+
       *numRetValues = 18;
 
       break;
@@ -216,6 +285,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConBusVoltage";
       retValues[0] = busCurrent;
       retValues[1] = busVoltage;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -237,6 +308,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConMotorVelocity";
       retValues[0] = vehicleVelocity;
       retValues[1] = motorVelocity;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -258,6 +331,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConPhaseBCurrent";
       retValues[0] = phaseCCurrent;
       retValues[1] = phaseBCurrent;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -279,6 +354,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConVq";
       retValues[0] = Vd;
       retValues[1] = Vq;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -300,6 +377,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConIq";
       retValues[0] = Id;
       retValues[1] = Iq;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -321,6 +400,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConBEMFq";
       retValues[0] = BEMFd;
       retValues[1] = BEMFq;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -341,6 +422,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConunused";
       retValues[0] = fifteenVSupply;
       retValues[1] = unused;
+      retType[0] = "float";
       *numRetValues = 1;
       break;
     }
@@ -362,6 +444,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConOnePointNineVSupply";
       retValues[0] = threePointThreeVSupply;
       retValues[1] = onePointNineVSupply;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -392,6 +476,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConMotorTemp";
       retValues[0] = heatSinkTemp;
       retValues[1] = motorTemp;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -412,6 +498,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[0] = "motConDSPBoardTemp";
       retValues[1] = unused;
       retValues[0] = DSPBoardTemp;
+      retType[0] = "float";
       *numRetValues = 1;
       break;
     }
@@ -442,6 +529,8 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConOdometer";
       retValues[0] = DCBusAmpHours;
       retValues[1] = odometer;
+      retType[0] = "float";
+      retType[1] = "float";
       *numRetValues = 2;
       break;
     }
@@ -462,6 +551,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       retStr[1] = "motConunused";
       retValues[0] = slipSpeed;
       retValues[1] = unused;
+      retType[0] = "float";
       *numRetValues = 1;
       break;
     }
@@ -483,4 +573,16 @@ void retreiveTwo32BitNums(uint8_t messageBuf[], int *num1, int *num2) {
     *num2 |= messageBuf[i+FOUR_BYTES];
   }
   
+}
+
+/*
+ * Takes an int and scales it by a float.
+ * The int should be interpreted forever onwards as a float. IF YOU INTERPRET IT AS AN INT IT WILL BE GARBAGE!
+ */
+void convertAndScaleIntToFloat(int *originalInt, float scale) {
+  float tmpFloat = (float) *originalInt;
+  tmpFloat *= scale;
+
+  float* pointerMagic = originalInt;
+  *pointerMagic = tmpFloat;
 }
