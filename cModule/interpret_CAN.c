@@ -6,7 +6,7 @@
  *    With the keys being strings and the values being integers.
  */
 void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, char** retType,  int* numRetValues) {
-  
+
   int bufLen = 0;
 
   switch (canId) {
@@ -31,7 +31,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
   case 0x1:
     {
       bufLen = 2;
-      
+
       int test1 = 0x41424344;
       int test2 = 0x41424344;
 
@@ -53,15 +53,15 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
 
 
     /*
-     *	Contains the battery high cell voltage and the battery low cell voltage. 
+     *	Contains the battery high cell voltage and the battery low cell voltage.
      */
     case CAN_ID_BPS_FRAME0:
     {
       int highVoltage = messageBuf[BPS_HIGH_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_HIGH_CELL_VOLTAGE_LOW_BYTE];  
       int lowVoltage = messageBuf[BPS_LOW_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_LOW_CELL_VOLTAGE_LOW_BYTE];
-     
-      convertAndScaleIntToFloat(&highVoltage, BPS_HIGH_CELL_VOLTAGE_SCALE); 
-      convertAndScaleIntToFloat(&lowVoltage, BPS_LOW_CELL_VOLTAGE_SCALE); 
+
+      convertAndScaleIntToFloat(&highVoltage, BPS_HIGH_CELL_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&lowVoltage, BPS_LOW_CELL_VOLTAGE_SCALE);
 
       retStr[0] = "bpsHighVoltage";
       retStr[1] = "bpsLowVoltage";
@@ -74,7 +74,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
     }
 
     /*
-     *	Contains the battery pack amp hours, total number of pack cycles, 
+     *	Contains the battery pack amp hours, total number of pack cycles,
      *	and the pack health.
      */
     case CAN_ID_BPS_FRAME1:
@@ -82,9 +82,9 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int packAmpHours = messageBuf[BPS_PACK_AMPHOURS_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_AMPHOURS_LOW_BYTE];
       int packCycles = messageBuf[BPS_TOTAL_PACK_CYCLES_HIGH_BYTE] << 8 | messageBuf[BPS_TOTAL_PACK_CYCLES_LOW_BYTE];
       int packHealth = messageBuf[BPS_PACK_HEALTH_BYTE];
-      
-      convertAndScaleIntToFloat(&packAmpHours, BPS_PACK_AMPHOURS_SCALE); 
-      
+
+      convertAndScaleIntToFloat(&packAmpHours, BPS_PACK_AMPHOURS_SCALE);
+
       retStr[0] = "packAmpHours";
       retStr[1] = "packTotalCycles";
       retStr[2] = "packHealth";
@@ -123,7 +123,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       *numRetValues = 4;
       break;
     }
-    
+
     /*
      *	Contains the battery pack current, instantaneous voltage, and summed voltage.
      */
@@ -133,10 +133,10 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int batteryPackInstantVoltage = messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_LOW_BYTE];
       int batteryPackSummedVoltage = messageBuf[BPS_PACK_SUMMED_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_SUMMED_VOLTAGE_LOW_BYTE];
 
-      convertAndScaleIntToFloat(&batteryPackCurrent, BPS_PACK_CURRENT_SCALE); 
-      convertAndScaleIntToFloat(&batteryPackInstantVoltage, BPS_PACK_INSTANTANEOUS_VOLTAGE_SCALE); 
-      convertAndScaleIntToFloat(&batteryPackSummedVoltage, BPS_PACK_SUMMED_VOLTAGE_SCALE); 
-      
+      convertAndScaleIntToFloat(&batteryPackCurrent, BPS_PACK_CURRENT_SCALE);
+      convertAndScaleIntToFloat(&batteryPackInstantVoltage, BPS_PACK_INSTANTANEOUS_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&batteryPackSummedVoltage, BPS_PACK_SUMMED_VOLTAGE_SCALE);
+
       retStr[0] = "batteryPackCurrent";
       retStr[1] = "batteryPackInstantaneousVoltage";
       retStr[2] = "batteryPackSummedVoltage";
@@ -152,7 +152,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
 
     /*
      *	Contains the serial number ane the tritium id from the motor controller.
-     *	
+     *
      *	NOTE:
      *	  The serial number and tritium id shoud be interpreted as a UINT32
      */
@@ -162,7 +162,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int tritiumID = 0;
 
       retreiveTwo32BitNums(messageBuf, &serialNumber, &tritiumID);
-      
+
       retStr[0] = "motConSerialNumber";
       retStr[1] = "motConTritiumID";
       retValues[0] = serialNumber;
@@ -172,7 +172,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       *numRetValues = 2;
       break;
     }
-    
+
     /*
      *	This frame contains a lot of status information from the motor controller.
      *
@@ -205,7 +205,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int limitVelocity = (limitFlags >> MOTOR_CONTROLLER_LIMIT_VELOCITY_BIT) & 1;
       int limitMotorCurrent = (limitFlags >> MOTOR_CONTROLLER_LIMIT_MOTOR_CURRENT_BIT) & 1;
       int limitOutputVoltagePWM = (limitFlags >> MOTOR_CONTROLLER_LIMIT_OUTPUT_VOLTAGE_PWM_BIT) & 1;
-      
+
       retStr[0]  = "motConReceiveErrorCount";
       retStr[1]  = "motConTransmitErrorCount";
       retStr[2]  = "motConActiveMotor";
@@ -267,7 +267,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
 
       break;
     }
-   
+
     /*
      *	NOTE:
      *	  busCurrent and busVoltage should be interpreted as floats.
@@ -280,7 +280,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int busVoltage = 0;
 
       retreiveTwo32BitNums(messageBuf, &busCurrent, &busVoltage);
-      
+
       retStr[0] = "motConBusCurrent";
       retStr[1] = "motConBusVoltage";
       retValues[0] = busCurrent;
@@ -290,7 +290,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       *numRetValues = 2;
       break;
     }
-    
+
     /*
      *	NOTE:
      *	  vehicleVelocity and motorVelocity should be interpreted as floats.
@@ -303,7 +303,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int motorVelocity = 0;
 
       retreiveTwo32BitNums(messageBuf, &vehicleVelocity, &motorVelocity);
-      
+
       retStr[0] = "motConVehicleVelocity";
       retStr[1] = "motConMotorVelocity";
       retValues[0] = vehicleVelocity;
@@ -326,7 +326,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int phaseBCurrent = 0;
 
       retreiveTwo32BitNums(messageBuf, &phaseCCurrent, &phaseBCurrent);
-      
+
       retStr[0] = "motConPhaseCCurrent";
       retStr[1] = "motConPhaseBCurrent";
       retValues[0] = phaseCCurrent;
@@ -336,7 +336,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       *numRetValues = 2;
       break;
     }
-    
+
     /*
      *	NOTE:
      *	  Vd and Vq should be interpreted as floats.
@@ -349,7 +349,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int Vq = 0;
 
       retreiveTwo32BitNums(messageBuf, &Vd, &Vq);
-      
+
       retStr[0] = "motConVd";
       retStr[1] = "motConVq";
       retValues[0] = Vd;
@@ -372,7 +372,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int Iq = 0;
 
       retreiveTwo32BitNums(messageBuf, &Id, &Iq);
-      
+
       retStr[0] = "motConId";
       retStr[1] = "motConIq";
       retValues[0] = Id;
@@ -395,7 +395,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int BEMFq = 0;
 
       retreiveTwo32BitNums(messageBuf, &BEMFd, &BEMFq);
-      
+
       retStr[0] = "motConBEMFd";
       retStr[1] = "motConBEMFq";
       retValues[0] = BEMFd;
@@ -417,7 +417,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int unused = 0;
 
       retreiveTwo32BitNums(messageBuf, &fifteenVSupply, &unused);
-      
+
       retStr[0] = "motConFifteenVSupply";
       retStr[1] = "motConunused";
       retValues[0] = fifteenVSupply;
@@ -439,7 +439,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int onePointNineVSupply = 0;
 
       retreiveTwo32BitNums(messageBuf, &threePointThreeVSupply, &onePointNineVSupply);
-      
+
       retStr[0] = "motConThreePointThreeVSupply";
       retStr[1] = "motConOnePointNineVSupply";
       retValues[0] = threePointThreeVSupply;
@@ -471,7 +471,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int motorTemp = 0;
 
       retreiveTwo32BitNums(messageBuf, &heatSinkTemp, &motorTemp);
-      
+
       retStr[0] = "motConHeatSinkTemp";
       retStr[1] = "motConMotorTemp";
       retValues[0] = heatSinkTemp;
@@ -493,7 +493,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int DSPBoardTemp = 0;
 
       retreiveTwo32BitNums(messageBuf, &unused, &DSPBoardTemp);
-      
+
       retStr[1] = "motConunused";
       retStr[0] = "motConDSPBoardTemp";
       retValues[1] = unused;
@@ -524,7 +524,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int odometer = 0;
 
       retreiveTwo32BitNums(messageBuf, &DCBusAmpHours, &odometer);
-      
+
       retStr[0] = "motConDCBusAmpHours";
       retStr[1] = "motConOdometer";
       retValues[0] = DCBusAmpHours;
@@ -546,7 +546,7 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       int unused = 0;
 
       retreiveTwo32BitNums(messageBuf, &slipSpeed, &unused);
-      
+
       retStr[0] = "motConSlipSpeed";
       retStr[1] = "motConunused";
       retValues[0] = slipSpeed;
@@ -572,7 +572,7 @@ void retreiveTwo32BitNums(uint8_t messageBuf[], int *num1, int *num2) {
     *num1 |= messageBuf[i];
     *num2 |= messageBuf[i+FOUR_BYTES];
   }
-  
+
 }
 
 /*

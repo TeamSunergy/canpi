@@ -8,6 +8,7 @@ import os
 import csv
 import binascii
 import interpret_CAN as test
+import struct
 
 def convertDictionary(dictionary):
 	return
@@ -57,11 +58,23 @@ try:
 		if (message is not None):
 			newData = "".join(map(chr,message.data))
 			lst = test.interpret(message.arbitration_id,newData)
-			print(lst)
-			print(message)
+			#lst = test.interpret(0xE1, newData)
+			#print(lst)
 			for x in lst:
-				dictionary[x[0]] = x[1]
-
+				m = None
+				if x[2] == "float":
+					m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))
+				elif  x[2] == "boolean":
+					if x[1] == 1:
+						m = True
+					else:
+						m = False
+				elif x [2] == "int":
+					m = x[1]
+				else:
+					raise RuntimeError("Unknown type received from interpret: " + x[2])
+				dictionary[x[0]] = m
+				print(dictionary)
 except KeyboardInterrupt:
 	# Closes the notifer which closes the Listeners as well
 	notifier.stop()

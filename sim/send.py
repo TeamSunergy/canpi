@@ -26,7 +26,7 @@ print("\n\rCAN Tx test")
 #if(channel == "can0"):
 #	os.system("sudo /sbin/ip link set can0 up type can bitrate " + str(bitrate))
 #else:
-#	os.system("sudo /sbin/ip link set " + channel + " up type vcan")
+os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 
 time.sleep(0.1) # from simple_tx_test.py, ensures interface is up before trying to use it.
 print("Press CTRL-C to exit")
@@ -46,11 +46,16 @@ try :
     while True:
         GPIO.output(led, True)
         msg = can.Message(
-                arbitration_id=0x1,
+                arbitration_id=0xE2,
                 data=[0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44],
                 extended_id=False)
         bus.send(msg)
-        count += 1
+        msg = can.Message(
+                arbitration_id=0x0,
+                data=[0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44],
+                extended_id=False)
+        bus.send(msg)
+        count += 2
         #time.sleep(0.1)
         GPIO.output(led, False)
         #time.sleep(0.1)
