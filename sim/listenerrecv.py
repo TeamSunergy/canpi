@@ -2,16 +2,10 @@
 # RECV.py
 
 import can
-import time
-import datetime
 import os
-import csv
 import binascii
-import interpret_CAN as test
+import interpret_CAN as interpret
 import struct
-
-def convertDictionary(dictionary):
-	return
 
 # network settings
 channel = "vcan0"
@@ -34,7 +28,7 @@ try:
 	"""
 	notifier = can.Notifier(bus, [buffRead, logger], timeout=1)
 except OSError:
-	print("Cannot find PiCAN board.")
+	print("Interface " + channel + " Down.")
 	exit()
 
 
@@ -46,20 +40,18 @@ dictionary = {}
 try:
 	while True:
 		message = buffRead.get_message()
-  #Old example message atributes are still the same
-  #logger.writerow([message.timestamp] + [message.arbitration_id]
-  # + [message.is_extended_id] + [message.is_remote_frame]
-  # + [message.is_error_frame] + [message.dlc]
-  # +[message.data.hex()])
-
-  #If buffered Read times out it returns an object of NoneType
-  # otherwise it returns a message with above attributes
+		# message attributes
+		# ([message.timestamp] + [message.arbitration_id]
+		# + [message.is_extended_id] + [message.is_remote_frame]
+		# + [message.is_error_frame] + [message.dlc]
+		# +[message.data.hex()])
+		#
+		#If buffered Read times out it returns an object of NoneType
+		# otherwise it returns a message with above attributes
 
 		if (message is not None):
 			newData = "".join(map(chr,message.data))
-			lst = test.interpret(message.arbitration_id,newData)
-			#lst = test.interpret(0xE1, newData)
-			#print(lst)
+			lst = interpret.interpret(message.arbitration_id,newData)
 			for x in lst:
 				m = None
 				if x[2] == "float":
@@ -74,7 +66,7 @@ try:
 				else:
 					raise RuntimeError("Unknown type received from interpret: " + x[2])
 				dictionary[x[0]] = m
-				print(dictionary)
+		print(dictionary)
 except KeyboardInterrupt:
 	# Closes the notifer which closes the Listeners as well
 	notifier.stop()
