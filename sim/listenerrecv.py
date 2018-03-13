@@ -66,7 +66,7 @@ try:
 				else:
 					raise RuntimeError("Unknown type received from interpret: " + x[2])
 				dictionary[x[0]] = m
-		print(dictionary)
+			print(dictionary)
 except KeyboardInterrupt:
 	# Closes the notifer which closes the Listeners as well
 	notifier.stop()

@@ -31,10 +31,10 @@ try :
                 arbitration_id=0xE2,
                 data=[0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44],
                 extended_id=False)
-        bus.send(msg)
+        #bus.send(msg)
         msg = can.Message(
-                arbitration_id=0xA,
-                data=[0x41, 0x42, 0x43, 0x44, 0x41, 0x42, 0x43, 0x44],
+                arbitration_id=0x13,
+                data=[0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00],
                 extended_id=False)
         bus.send(msg)
         count += 2

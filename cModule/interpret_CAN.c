@@ -556,6 +556,15 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
       break;
     }
 
+    default:
+    {
+      retStr[0] = "InvalidCanMessage";
+      retValues[0] = canId;
+      retType[0] = "int";
+      *numRetValues = 1;
+      break;
+    }
+
   }
 }
 
