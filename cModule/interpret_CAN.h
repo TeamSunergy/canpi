@@ -40,7 +40,7 @@ void convertAndScaleIntToFloat(int *originalInt, float scale);
 //=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 #define BPS_HIGH_CELL_VOLTAGE_HIGH_BYTE 0
 #define BPS_HIGH_CELL_VOLTAGE_LOW_BYTE  1
-#define BPS_LOW_CELL_VOLTAGE_HIGH_BYTE  2
+#define BPS_LOW_CELL_VOLTAGE_HIGH_BYTE 	2
 #define BPS_LOW_CELL_VOLTAGE_LOW_BYTE   3
 #define BPS_PACK_AMPHOURS_HIGH_BYTE 0
 #define BPS_PACK_AMPHOURS_LOW_BYTE  1

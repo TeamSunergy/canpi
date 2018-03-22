@@ -1,5 +1,6 @@
 #include "/usr/include/python3.5/Python.h"
 #include "interpret_CAN.h"
+#include <stdio.h>
 
 #define RET_LIST_MAX_LENGTH 32
 #define RET_STRING_MAX_LENGTH 32
@@ -31,7 +32,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   int strLength = 0;
 
   //Parse the arguments
-  PyArg_ParseTuple(args, "bs#:interpretMessage", &canID, &byteBuffer, &strLength);
+  PyArg_ParseTuple(args, "by#:interpretMessage", &canID, &byteBuffer, &strLength);
 
   interpretMessage(canID, byteBuffer, retVariableNames, retVariableValues, retTypes, &listLen);
 

@@ -11,7 +11,7 @@ import csv
 #can.rc('socketcan', 'vcan0', 128000)
 #bus = can.interface.Bus('socketcan', 'vcan0', 128000)
 bustype = 'socketcan_native'
-channel = 'can0'
+channel = 'can1'
 #bus = can.interface.Bus('vcan0', bustype='virtual')
 
 class everything():

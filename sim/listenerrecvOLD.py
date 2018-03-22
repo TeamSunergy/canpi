@@ -16,8 +16,36 @@ import asyncio
 import multiprocessing
 
 # network settings
-channel = "can1"
-bitrate = 125000 # 128000 if useing can0
+channel = "vcan0"
+bitrate = 128000 # 128000 if useing can0
+socketFile = "/tmp/mySocket"
+
+
+async def echo_server(address, loop, sleep_seconds):
+    sock = socket(AF_INET, SOCK_STREAM)
+    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    sock.bind(address)
+    sock.listen(1)
+    print("Server started. Host: %s Port: %s " % (address[0],address[1]))
+    # client is a new socket object usable to send and receive data on the connection,
+    # address is the address bound to the socket on the other end of the connection
+    sock.setblocking(False)
+    while True:
+        client, address = await loop.sock_accept(sock)
+        print('Connection from: ', address)
+        loop.create_task(echo_handler(client,loop,sleep_seconds))
+
+
+async def echo_handler(client, loop, sleep_seconds):
+while True:
+	socket2 = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+	socket2.connect("/tmp/mySocket")
+	await asyncio.sleep(sleep_seconds)
+	string = ""
+	for line in socket2.makefile('r'):
+		string += line
+	await loop.sock_sendall(client,json.dumps(string).encode())
+	#print("Send user JSON @", datetime.now())
 
 
 print("CAN RECV test")
@@ -29,7 +57,7 @@ try:
 	buffRead = can.BufferedReader()
 	#Creates a device that logs all canbus messages to a csv file
 	# NOTE: encodes data in base64
-	#logger = can.CSVWriter(str(datetime.now()) + ".csv")
+	logger = can.CSVWriter("test.csv")
 	"""
 	Creates a notifier object which accepts an array of objects of the can.Listener class
 	Whenever it receves a message from bus it calls the Listeners in the array
@@ -41,10 +69,17 @@ except OSError:
 	exit()
 
 
+if os.path.exists(socketFile):
+	os.remove(socketFile)
+
+sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+sock.bind(socketFile)
 
 dictionary = {}
 #dict = multiprocessing.Value("dict", "")
 
+loop = asyncio.get_event_loop()
+loop.run_until_complete(echo_server(('127.0.0.1',25000), loop, 4))
 
 print("Ready")
 
@@ -60,11 +95,9 @@ try:
 		#
 		#If buffered Read times out it returns an object of NoneType
 		# otherwise it returns a message with above attributes
-		print(message)
+
 		if (message is not None):
 			newData = "".join(map(chr,message.data))
-			#print(binascii.hexlify(bytearray(newData)))
-			#print(list(map(ord,newData)))
 			lst = interpret.interpret(message.arbitration_id,newData)
 			for x in lst:
 				m = None
@@ -81,7 +114,8 @@ try:
 					raise RuntimeError("Unknown type received from interpret: " + x[2])
 				dictionary[x[0]] = m
 			#dict.value = str(dictionary)
-			#print(dictionary)
+			print(dictionary)
+			sock.sendall(str(dictionary).encode("utf-8"))
 except KeyboardInterrupt:
 	# Closes the notifer which closes the Listeners as well
 	notifier.stop()
