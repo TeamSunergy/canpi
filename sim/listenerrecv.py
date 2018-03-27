@@ -16,8 +16,8 @@ import asyncio
 import multiprocessing
 
 # network settings
-channel = "can1"
-bitrate = 125000 # 128000 if useing can0
+channel = "vcan0"
+#bitrate = 125000 # 128000 if useing can0
 
 
 print("CAN RECV test")
@@ -29,11 +29,13 @@ try:
 	buffRead = can.BufferedReader()
 	#Creates a device that logs all canbus messages to a csv file
 	# NOTE: encodes data in base64
-	#logger = can.CSVWriter(str(datetime.now()) + ".csv")
+	# logger = can.CSVWriter(str(datetime.now()) + ".csv")
+	logger = can.CSVWriter(str("test" + ".csv")
 	"""
 	Creates a notifier object which accepts an array of objects of the can.Listener class
 	Whenever it receves a message from bus it calls the Listeners in the array
 	and lets them handle the message.
+
 	"""
 	notifier = can.Notifier(bus, [buffRead, logger], timeout=1)
 except OSError:
@@ -87,7 +89,3 @@ except KeyboardInterrupt:
 	notifier.stop()
 	print("Keyboard interrupt")
 	print(dictionary)
-
-
-
-
