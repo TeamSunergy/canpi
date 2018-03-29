@@ -11,8 +11,7 @@ import struct
 import time
 import base64
 from threading import Thread
-
-
+import faulthandler
 async def echo_server(address, loop, sleep_seconds):
     sock = socket(AF_INET, SOCK_STREAM)
     sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -28,14 +27,13 @@ async def echo_server(address, loop, sleep_seconds):
         loop.create_task(echo_handler(client,sleep_seconds))
 
 async def echo_handler(client, sleep_seconds):
-    print('xsef')
     while True:
+        #print(json.dumps(dictionary, indent = 4))
         await asyncio.sleep(sleep_seconds)
         await loop.sock_sendall(client,json.dumps(dictionary).encode())
         print("Sent user JSON @", datetime.datetime.now())
 
 def message():
-
     initDictionary()
     while True:
         try:
@@ -43,8 +41,8 @@ def message():
             if (message is not None):
                 newData = base64.b64encode(message.data) #This is a hack,
                 newData = base64.b64decode(newData)      #convert byte array to bytes
+                #print(hex(message.arbitration_id) + "||" + str(newData))
                 lst = interpret.interpret(message.arbitration_id, newData)
-                print(lst)
                 for x in lst:
                     m = None
                     if x[2] == "float":
@@ -59,10 +57,9 @@ def message():
                     else:
                         raise RuntimeError("Unknown type received from interpret: " + x[2])
                     dictionary[x[0]] = m
-
                 dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
                 dictionary["timeSent"] = str(datetime.datetime.now())
-            time.sleep(0)
+                time.sleep(10)
         except KeyboardInterrupt:
             # Closes the notifer which closes the Listeners as well
             notifier.stop()
@@ -130,6 +127,7 @@ def initDictionary():
 
 
 if __name__ == '__main__':
+    faulthandler.enable()
     # network settings
     channel = "vcan0"
     # bitrate = 128000  # 128000 if useing can0
@@ -156,8 +154,6 @@ if __name__ == '__main__':
         exit()
         print("x")
 
-    message()
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, message)
-    #loop.run_until_complete(echo_server(('192.168.0.116',25010), loop, 2))
-    loop.run_until_complete(echo_server(('127.0.0.1',25000),loop,4))
+    loop.run_until_complete(echo_server(('192.168.0.116',25000),loop,5))

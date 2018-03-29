@@ -27,17 +27,18 @@ except OSError:
 
 # Main loop
 try :
-    with open("2018-03-18 15:25:12.319795.csv", newline = "\n") as file:
+    #with open("2018-03-18 15:25:12.319795.csv", newline = "\n") as file:
+    with open("2018-03-18 13:57:22.211799.csv", newline = "\n") as file:
         reader = csv.reader(file, delimiter = ",", quoting = csv.QUOTE_NONE)
-        for row in reader:
-            if row[1][0] != "0":
-                continue
-            print(row)
-            # [0x00, 0x95, 0x60, 0x64, 0x00, 0x0f, 0xef, 0x57]
-            msg = can.Message(arbitration_id=int(row[1], 0),data=base64.b64decode(row[6]),extended_id=False)
-            bus.send(msg)
-            count += 1
-            print(count)
+        while True:
+            for row in reader:
+                if row[1][0] != "0":
+                    continue
+                # [0x00, 0x95, 0x60, 0x64, 0x00, 0x0f, 0xef, 0x57]
+                msg = can.Message(arbitration_id=int(row[1], 0),data=base64.b64decode(row[6]),extended_id=row[2] == 1)
+                bus.send(msg)
+                count += 1
+                print(count)
 
 except KeyboardInterrupt:
     # Catch keyboard interrupt
