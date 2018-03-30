@@ -1,12 +1,11 @@
 #!/usr/bin/python3
-# Replay
+# SEND
+#github.com/skpang/PiCAN-Python-examples/blob/master/simple_tx_test.py
 
 import can
 import time
 import os
-import csv
-import binascii
-import base64
+
 count = 0
 
 # network settings
@@ -24,79 +23,42 @@ except OSError:
     print("Interface " + channel + " is down.")
     exit()
 
+dictionary = []
 
+dictionary["0xA"] = [0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00]
+dictionary["0xB"] = [0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00]
+dictionary["0xC"] = [0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00]
+dictionary["0xD"] = [0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00]
+dictionary["0xE3"] = [0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00]
+add = True
 # Main loop
 try :
-    #with open("2018-03-18 15:25:12.319795.csv", newline = "\n") as file:
     while True:
-        with open("2018-03-18 13:57:22.211799.csv", newline = "\n") as file:
-            reader = csv.reader(file, delimiter = ",", quoting = csv.QUOTE_NONE)
-            for row in reader:
-                if row[1][0] != "0":
-                    continue
-                # [0x00, 0x95, 0x60, 0x64, 0x00, 0x0f, 0xef, 0x57]
-                msg = can.Message(arbitration_id=int(row[1], 0),data=base64.b64decode(row[6]),extended_id=row[2] == 1)
-                bus.send(msg)
-                count += 1
-                print(count)
+        for dic in dictionary:
+            for x in dic:
+                if add == True:
+                    x += 1
+                else:
+                    x-= 1
+    	msg = can.Message(arbitration_id= int(,
+    	data=[0x8F, 0x3A, 0x8E, 0xA3, 0x13, 0x01, 0xE3, 0x00],extended_id=False)
+    	bus.send(msg)
+    	msg = can.Message(arbitration_id=0x0B,data=[0x00, 0x95, 0x60, 0x64, 0x00, 0x0f, 0xef, 0x57],extended_id=False)
+    	bus.send(msg)
+    	msg = can.Message(arbitration_id=0x0C,data=[0x00, 0x25, 0x10, 0x24, 0x00, 0x0f, 0xaf, 0x57],extended_id=False)
+    	bus.send(msg)
+    	msg = can.Message(arbitration_id=0x0D,data=[0x00, 0x15, 0x08, 0x04, 0x00, 0x0f, 0x1f, 0x57],extended_id=False)
+    	bus.send(msg)
+    	count += 1
+        if count % 20 == 0:
+            if add:
+                add = False
+            else:
+                add = True
+    	print(count)
 
 except KeyboardInterrupt:
     # Catch keyboard interrupt
     print("\n\rKeyboard interrupt")
     exit()
-    dictionary["bpsHighVoltage"] = 0.0
-    dictionary["bpsLowVoltage"] = 0.0
-    dictionary["packAmpHours"] = 0.0
-    dictionary["packTotalCycles"] = int(0)
-    dictionary["packHealth"] = int(0)
-    dictionary["highestCellTemperature"] = int(0)
-    dictionary["lowestCellTemperature"] = int(0)
-    dictionary["averageCellTemperature"] = int(0)
-    dictionary["internalBPSTemperature"] = int(0)
-    dictionary["batteryPackCurrent"] = 0.0
-    dictionary["batteryPackInstantaneousVoltage"] = 0.0
-    dictionary["batteryPackSummedVoltage"] = 0.0
-    dictionary["motConSerialNumber"] = 0
-    dictionary["motConTritiumID"] = int(0)
-    dictionary["motConReceiveErrorCount"] = int(0)
-    dictionary["motConTransmitErrorCount"] = int(0)
-    dictionary["motConActiveMotor"] = int(0)
-    dictionary["motConErrorMotorOverSpeed"] = False
-    dictionary["motConErrorDesaturation"] = False
-    dictionary["motConErrorUVLO"] = False
-    dictionary["motConErrorConfigReadError"] = False
-    dictionary["motConErrorWatchdog"] = False
-    dictionary["motConErrorBadMotorPosition"] = False
-    dictionary["motConErrorDCBusOverVoltage"] = False
-    dictionary["motConErrorSoftwareOverCurrent"] = False
-    dictionary["motConLimitTemperature"] = False
-    dictionary["motConLimitBusVoltageLower"] = False
-    dictionary["motConLimitBusVoltageUpper"] = False
-    dictionary["motConLimitCurrent"] = False
-    dictionary["motConLimitVelocity"] = False
-    dictionary["motConLimitMotorCurrent"] = False
-    dictionary["motConLimitOutputVoltagePWM"] = False
-    dictionary["motConBusCurrent"] = 0.0
-    dictionary["motConBusVoltage"] = 0.0
-    dictionary["motConVehicleVelocity"] = 0.0
-    dictionary["motConMotorVelocity"] = 0.0
-    dictionary["motConPhaseCCurrent"] = 0.0
-    dictionary["motConPhaseBCurrent"] = 0.0
-    dictionary["motConVd"] = 0.0
-    dictionary["motConVq"] = 0.0
-    dictionary["motConId"] = 0.0
-    dictionary["motConIq"] = 0.0
-    dictionary["motConBEMFd"] = 0.0
-    dictionary["motConBEMFq"] = 0.0
-    dictionary["motConFifteenVSupply"] = 0.0
-    dictionary["motConThreePointThreeVSupply"] = 0.0
-    dictionary["motConOnePointNineVSupply"] = 0.0
-    dictionary["motConHeatSinkTemp"] = 0.0
-    dictionary["motConMotorTemp"] = 0.0
-    dictionary["motConDSPBoardTemp"] = 0.0
-    dictionary["motConDCBusAmpHours"] = 0.0
-    dictionary["motConOdometer"] = 0.0
-    dictionary["motConSlipSpeed"] = 0.0
-    dictionary["InvalidCanMessage"] = int(0)
-    dictionary["netPower"] = 0.0
 
