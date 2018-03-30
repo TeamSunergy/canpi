@@ -28,11 +28,16 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   int* retVariableValues = (int*) malloc(RET_LIST_MAX_LENGTH*sizeof(int));
   char ** retTypes = (char**) malloc(RET_LIST_MAX_LENGTH*RET_TYPE_MAX_LENGTH);
   uint8_t *byteBuffer = NULL;
-  uint8_t canID = 0;
+  uint32_t canID = 0;
   int strLength = 0;
 
   //Parse the arguments
   PyArg_ParseTuple(args, "by#:interpretMessage", &canID, &byteBuffer, &strLength);
+
+  if (canID > 255) {
+	  printf("Invalid CANID, CANID is greater than 255.\n");
+	  return NULL;
+  }
 
   interpretMessage(canID, byteBuffer, retVariableNames, retVariableValues, retTypes, &listLen);
 

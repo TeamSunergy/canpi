@@ -10,46 +10,6 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
   int bufLen = 0;
 
   switch (canId) {
-    case 0x0:
-    {
-      bufLen = 2;
-      int tmpSum = 0;
-      for (int i = 0; i < bufLen; i++) {
-	tmpSum += (int) messageBuf[i];
-      }
-      retStr[0] = "TestValue";
-      retValues[0] = tmpSum;
-      retStr[1] = "Cake";
-      retValues[1] = 9001;
-      retType[0] = "int";
-      retType[1] = "int";
-      *numRetValues = 2;
-
-      break;
-    }
-
-  case 0x1:
-    {
-      bufLen = 2;
-
-      int test1 = 0x41424344;
-      int test2 = 0x41424344;
-
-      float* tmp = &test1;
-
-      *tmp += 1;
-      test2 += 1;
-
-      retStr[0] = "floatVal";
-      retValues[0] = test1;
-      retStr[1] = "intVal";
-      retValues[1] = test2;
-      retType[0] = "float";
-      retType[1] = "int";
-      *numRetValues = 2;
-
-      break;
-    }
 
 
     /*

@@ -28,9 +28,9 @@ except OSError:
 # Main loop
 try :
     #with open("2018-03-18 15:25:12.319795.csv", newline = "\n") as file:
-    with open("2018-03-18 13:57:22.211799.csv", newline = "\n") as file:
-        reader = csv.reader(file, delimiter = ",", quoting = csv.QUOTE_NONE)
-        while True:
+    while True:
+        with open("2018-03-18 13:57:22.211799.csv", newline = "\n") as file:
+            reader = csv.reader(file, delimiter = ",", quoting = csv.QUOTE_NONE)
             for row in reader:
                 if row[1][0] != "0":
                     continue
