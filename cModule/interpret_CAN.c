@@ -1,13 +1,12 @@
 #include "interpret_CAN.h"
 #include <stdint.h>
+#include <stdio.h>
 
 /*
  *  Converts a CANID and its associated byte buffer to a set of key-value pairs.
  *    With the keys being strings and the values being integers.
  */
-void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, char** retType,  int* numRetValues) {
-
-  int bufLen = 0;
+void interpretMessage(uint8_t canId, uint8_t messageBuf[], int bufferSize, char** retStr, int* retValues, char** retType,  int* numRetValues) {
 
   switch (canId) {
 
@@ -17,6 +16,12 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_BPS_FRAME0:
     {
+
+      if (!isValidMessageLength(canId, CAN_ID_BPS_FRAME0_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int highVoltage = messageBuf[BPS_HIGH_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_HIGH_CELL_VOLTAGE_LOW_BYTE];  
       int lowVoltage = messageBuf[BPS_LOW_CELL_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_LOW_CELL_VOLTAGE_LOW_BYTE];
 
@@ -39,6 +44,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_BPS_FRAME1:
     {
+      if (!isValidMessageLength(canId, CAN_ID_BPS_FRAME1_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int packAmpHours = messageBuf[BPS_PACK_AMPHOURS_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_AMPHOURS_LOW_BYTE];
       int packCycles = messageBuf[BPS_TOTAL_PACK_CYCLES_HIGH_BYTE] << 8 | messageBuf[BPS_TOTAL_PACK_CYCLES_LOW_BYTE];
       int packHealth = messageBuf[BPS_PACK_HEALTH_BYTE];
@@ -63,6 +73,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_BPS_FRAME2:
     {
+      if (!isValidMessageLength(canId, CAN_ID_BPS_FRAME2_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int highestCellTemperature = messageBuf[BPS_HIGHEST_CELL_TEMPERATURE_BYTE];
       int lowestCellTemperature = messageBuf[BPS_LOWEST_CELL_TEMPERATURE_BYTE];
       int averageCellTemperature = messageBuf[BPS_AVERAGE_CELL_TEMPERATURE_BYTE];
@@ -89,6 +104,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_BPS_FRAME3:
     {
+      if (!isValidMessageLength(canId, CAN_ID_BPS_FRAME3_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int batteryPackCurrent = messageBuf[BPS_PACK_CURRENT_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_CURRENT_LOW_BYTE];
       int batteryPackInstantVoltage = messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_INSTANTANEOUS_VOLTAGE_LOW_BYTE];
       int batteryPackSummedVoltage = messageBuf[BPS_PACK_SUMMED_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[BPS_PACK_SUMMED_VOLTAGE_LOW_BYTE];
@@ -118,6 +138,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME0:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME0_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int serialNumber = 0;
       int tritiumID = 0;
 
@@ -143,6 +168,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME1:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME1_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int receiveErrorCount = messageBuf[MOTOR_CONTROLLER_RECEIVE_ERROR_COUNT_BYTE];
       int transmitErrorCount = messageBuf[MOTOR_CONTROLLER_TRANSMIT_ERROR_COUNT_BYTE];
       int activeMotor = messageBuf[MOTOR_CONTROLLER_ACTIVE_MOTOR_HIGH_BYTE] << 8 | messageBuf[MOTOR_CONTROLLER_ACTIVE_MOTOR_LOW_BYTE];
@@ -236,6 +266,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME2:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME2_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int busCurrent = 0;
       int busVoltage = 0;
 
@@ -259,6 +294,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME3:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME3_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int vehicleVelocity = 0;
       int motorVelocity = 0;
 
@@ -282,6 +322,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME4:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME4_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int phaseCCurrent = 0;
       int phaseBCurrent = 0;
 
@@ -305,6 +350,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME5:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME5_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int Vd = 0;
       int Vq = 0;
 
@@ -328,6 +378,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME6:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME6_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int Id = 0;
       int Iq = 0;
 
@@ -351,6 +406,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME7:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME7_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int BEMFd = 0;
       int BEMFq = 0;
 
@@ -373,6 +433,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME8:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME8_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int fifteenVSupply = 0;
       int unused = 0;
 
@@ -395,6 +460,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME9:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME9_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int threePointThreeVSupply = 0;
       int onePointNineVSupply = 0;
 
@@ -415,6 +485,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME10:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME10_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       *numRetValues = 0;
       break;
     }
@@ -427,6 +502,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME11:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME11_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int heatSinkTemp = 0;
       int motorTemp = 0;
 
@@ -449,6 +529,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME12:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME12_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int unused = 0;
       int DSPBoardTemp = 0;
 
@@ -468,6 +553,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME13:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME13_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       *numRetValues = 0;
       break;
     }
@@ -480,6 +570,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME14:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME14_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int DCBusAmpHours = 0;
       int odometer = 0;
 
@@ -502,6 +597,11 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
      */
     case CAN_ID_MOTOR_CONTROLLER_FRAME15:
     {
+      if (!isValidMessageLength(canId, CAN_ID_MOTOR_CONTROLLER_FRAME15_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
       int slipSpeed = 0;
       int unused = 0;
 
@@ -518,6 +618,9 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* r
 
     default:
     {
+
+      fprintf(stderr, "ERROR in CModule, invalid CANID. CANID: %d, MessageLength: %d\n", canId, bufferSize);
+
       retStr[0] = "InvalidCanMessage";
       retValues[0] = canId;
       retType[0] = "int";
@@ -554,4 +657,12 @@ void convertAndScaleIntToFloat(int *originalInt, float scale) {
 
   float* pointerMagic = originalInt;
   *pointerMagic = tmpFloat;
+}
+
+int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actualLength) {
+  if (expectedLength != actualLength) {
+    fprintf(stderr, "ERROR in CModule, data message length is not the same as specified for CANID. CANID: %d, ExpectedLength: %d, ActualLength: %d\n", canId, expectedLength, actualLength);
+    return 0;
+  }
+  return 1;
 }

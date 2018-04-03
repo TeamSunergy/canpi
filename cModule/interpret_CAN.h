@@ -6,9 +6,10 @@
 
 // Function Declarations
 //=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
-void interpretMessage(uint8_t canId, uint8_t messageBuf[], char** retStr, int* retValues, char** retType, int* numRetValues);
+void interpretMessage(uint8_t canId, uint8_t messageBuf[], int bufferSize, char** retStr, int* retValues, char** retType, int* numRetValues);
 void retreiveTwo32BitNums(uint8_t messageBuf[], int *num1, int *num2);
 void convertAndScaleIntToFloat(int *originalInt, float scale);
+int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actualLength);
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // CAN Message ID Constants
@@ -34,6 +35,30 @@ void convertAndScaleIntToFloat(int *originalInt, float scale);
 #define CAN_ID_MOTOR_CONTROLLER_FRAME13 CAN_ID_MOTOR_CONTROLLER_BASE+0xD 
 #define CAN_ID_MOTOR_CONTROLLER_FRAME14 CAN_ID_MOTOR_CONTROLLER_BASE+0xE  
 #define CAN_ID_MOTOR_CONTROLLER_FRAME15 CAN_ID_MOTOR_CONTROLLER_BASE+0x17 
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+// CAN Message Data Length
+//=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+#define CAN_ID_BPS_FRAME0_LEN 4
+#define CAN_ID_BPS_FRAME1_LEN 4
+#define CAN_ID_BPS_FRAME2_LEN 4
+#define CAN_ID_BPS_FRAME3_LEN 6
+#define CAN_ID_MOTOR_CONTROLLER_FRAME0_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME1_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME2_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME3_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME4_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME5_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME6_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME7_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME8_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME9_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME10_LEN 0
+#define CAN_ID_MOTOR_CONTROLLER_FRAME11_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME12_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME13_LEN 0
+#define CAN_ID_MOTOR_CONTROLLER_FRAME14_LEN 8
+#define CAN_ID_MOTOR_CONTROLLER_FRAME15_LEN 8
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //BPS Definitions
