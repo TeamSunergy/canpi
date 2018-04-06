@@ -32,11 +32,11 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   int bufferSize = 0;
 
   //Parse the arguments
-  PyArg_ParseTuple(args, "by#:interpretMessage", &canID, &byteBuffer, &bufferSize);
+  PyArg_ParseTuple(args, "hy#:interpretMessage", &canID, &byteBuffer, &bufferSize);
 
-  if (canID > 255) {
-	  printf("Invalid CANID, CANID is greater than 255.\n");
-	  return NULL;
+  if (canID > 255 || canID < 0) {
+	  fprintf(stderr,"Error in CModule. Invalid CANID. CANID is greater than 255 or less than 0.\n");
+	  return Py_BuildValue("s", "");
   }
 
   interpretMessage(canID, byteBuffer, bufferSize, retVariableNames, retVariableValues, retTypes, &listLen);
@@ -44,14 +44,14 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   //Instantiate the Python list that will be returned
   PyObject *retList = PyList_New(listLen);
   if (!retList)
-    return NULL;
+    return Py_BuildValue("s", "");
 
   //Convert C arrays to a Python list of tuples
   for (int i = 0; i < listLen; i++) {
     PyObject *tuple = Py_BuildValue("sis", retVariableNames[i], retVariableValues[i], retTypes[i]);
     if (!tuple) {
       Py_DECREF(tuple);
-      return NULL;
+      return Py_BuildValue("s", "");
     }
     PyList_SET_ITEM(retList, i, tuple);
   }

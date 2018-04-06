@@ -44,6 +44,10 @@ def message():
                 newData = base64.b64decode(newData)      #convert byte array to bytes
                 print(hex(message.arbitration_id) + "||" + str(newData))
                 lst = interpret.interpret(message.arbitration_id, newData)
+
+                if (lst == ""):
+                    print("255 sucks")
+                    continue
                 for x in lst:
                     m = None
                     if x[2] == "float":
@@ -153,4 +157,4 @@ if __name__ == '__main__':
     
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, message)
-    loop.run_until_complete(echo_server(('192.168.0.116',25000),loop,.2))
+    loop.run_until_complete(echo_server(('0.0.0.0',25000),loop,.2))

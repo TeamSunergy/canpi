@@ -39,10 +39,10 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 
 // CAN Message Data Length
 //=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
-#define CAN_ID_BPS_FRAME0_LEN 4
-#define CAN_ID_BPS_FRAME1_LEN 4
-#define CAN_ID_BPS_FRAME2_LEN 4
-#define CAN_ID_BPS_FRAME3_LEN 6
+#define CAN_ID_BPS_FRAME0_LEN 7
+#define CAN_ID_BPS_FRAME1_LEN 8
+#define CAN_ID_BPS_FRAME2_LEN 7
+#define CAN_ID_BPS_FRAME3_LEN 7
 #define CAN_ID_MOTOR_CONTROLLER_FRAME0_LEN 8
 #define CAN_ID_MOTOR_CONTROLLER_FRAME1_LEN 8
 #define CAN_ID_MOTOR_CONTROLLER_FRAME2_LEN 8
