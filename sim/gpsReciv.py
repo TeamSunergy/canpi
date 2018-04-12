@@ -12,6 +12,6 @@ for i in range(10):
 while True:
     data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
     if str(data).startswith("$GPRMC"):
-    	print(data.fields[2][1] + " " + data.data[3] + data.data[2][:3])
+        print(data.fields[2][1] + " " + data.data[3] + data.data[2][:3])
         print(data.fields[4][1] + " " + data.data[5] + data.data[4][:3])
 ser.close()
