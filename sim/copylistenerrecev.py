@@ -13,8 +13,10 @@ import faulthandler
 import sys
 import signal
 import multiprocessing
+import socket
 
 exitTime = multiprocessing.Value("B", False, lock=False)
+socketFile = "/tmp/mySocket"
 
 def handleSIGINT(signum, frame):
     print("RECEIVED SIGINT!!!")
@@ -23,6 +25,18 @@ def handleSIGINT(signum, frame):
     print(dictionary)
     print("AGHHHHHHHHHHHHH!!!")
     exit()
+
+def toDash():
+    while not exitTime:
+
+        if os.path.exists(socketFile):
+            c = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            c.connect(socketFile)
+            dict_data = json.dumps(dict(dictionary))
+            c.send(dict_data.encode("utf-8"))
+        time.sleep(1)
+
+    c.close()
 
 def echo_server(address, sleep_seconds):
     signal.signal(signal.SIGINT, handleSIGINT)
@@ -40,13 +54,12 @@ def echo_server(address, sleep_seconds):
             #    time.sleep(2)
             #    print("==2-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
             #    count = 100 / 0
-            #count += 
+            #count +=
         client, address = sock.accept()
         print('Connection from: ', address)
         #loop.create_task(echo_handler(client,sleep_seconds))
         multiprocessing.Process(target=echo_handler, args=(client, sleep_seconds)).start()
         time.sleep(1)
-        
 
 def echo_handler(client, sleep_seconds):
     signal.signal(signal.SIGINT, handleSIGINT)
@@ -197,7 +210,9 @@ print("==2")
 p = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), .2))
 jobs.append(p)
 p.start()
-#loop.run_in_executor(None, message)
+p = multiprocessing.Process(target=toDash)
+jobs.append(p)
+p.start()
 print("==3")
 #loop.run_in_executor(None, echo_server(('0.0.0.0',25000),loop,.2))
 #print("==4" + asyncio.all_tasks())
