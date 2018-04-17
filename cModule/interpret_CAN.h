@@ -34,7 +34,10 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define CAN_ID_MOTOR_CONTROLLER_FRAME12 CAN_ID_MOTOR_CONTROLLER_BASE+0xC 
 #define CAN_ID_MOTOR_CONTROLLER_FRAME13 CAN_ID_MOTOR_CONTROLLER_BASE+0xD 
 #define CAN_ID_MOTOR_CONTROLLER_FRAME14 CAN_ID_MOTOR_CONTROLLER_BASE+0xE  
-#define CAN_ID_MOTOR_CONTROLLER_FRAME15 CAN_ID_MOTOR_CONTROLLER_BASE+0x17 
+#define CAN_ID_MOTOR_CONTROLLER_FRAME15 CAN_ID_MOTOR_CONTROLLER_BASE+0x17
+#define CAN_ID_THERMISTOR_FRAME0 0x80
+#define CAN_ID_THERMISTOR_FRAME1 0x81
+#define CAN_ID_THERMISTOR_FRAME2 0x82
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // CAN Message Data Length
@@ -59,6 +62,9 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define CAN_ID_MOTOR_CONTROLLER_FRAME13_LEN 0
 #define CAN_ID_MOTOR_CONTROLLER_FRAME14_LEN 8
 #define CAN_ID_MOTOR_CONTROLLER_FRAME15_LEN 8
+#define CAN_ID_THERMISTOR_FRAME0_LEN 4
+#define CAN_ID_THERMISTOR_FRAME1_LEN 4
+#define CAN_ID_THERMISTOR_FRAME2_LEN 8
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //BPS Definitions
