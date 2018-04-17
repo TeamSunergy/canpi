@@ -616,6 +616,48 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], int bufferSize, char*
       break;
     }
 
+    /*
+     *	Unused
+     */
+    case CAN_ID_THERMISTOR_FRAME0:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_THERMISTOR_FRAME0_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      *numRetValues = 0;
+      break;
+    }
+
+    /*
+     *	Unused
+     */
+    case CAN_ID_THERMISTOR_FRAME1:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_THERMISTOR_FRAME1_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      *numRetValues = 0;
+      break;
+    }
+
+    /*
+     *	Unused
+     */
+    case CAN_ID_THERMISTOR_FRAME2:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_THERMISTOR_FRAME2_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      *numRetValues = 0;
+      break;
+    }
+
     default:
     {
 
