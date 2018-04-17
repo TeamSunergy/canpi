@@ -20,17 +20,16 @@ def main():
     try:
 
         # Send data
-        #message = b'This is the message.  It will be repeated.'
-        #print ('sending "%s"' % message, file=sys.stderr)
-        #sock.sendall(message)
+        message = b'This is the message.  It will be repeated.'
+        print ('sending "%s"' % message, file=sys.stderr)
+        sock.sendall(message)
 
         amount_received = 0
-        #amount_expected = len(message)
+        amount_expected = len(message)
 
-        #while amount_received < amount_expected:
-        while True:
-            data = sock.recv(32)
-            #amount_received += len(data)
+        while amount_received < amount_expected:
+            data = sock.recv(16)
+            amount_received += len(data)
             print ('received "%s"' % data, file=sys.stderr)
 
     finally:

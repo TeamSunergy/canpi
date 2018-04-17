@@ -14,7 +14,7 @@ import sys
 import signal
 import multiprocessing
 import socket
-
+import select
 exitTime = multiprocessing.Value("B", False, lock=False)
 
 def handleSIGINT(signum, frame):
@@ -37,28 +37,36 @@ def toDash(server_address, refresh_rate):
     # Bind the socket to the port
     print ('starting up on %s' % server_address, file=sys.stderr)
     sock.bind(server_address)
+    sock.setblocking(False)
     # Listen for incoming connections
     sock.listen(1)
-    while True:
+    while not exitTime.value:
         # Wait for a connection
             print ('waiting for a connection',  file=sys.stderr)
+            ready = select.select([sock], [], [], 5)[0]
+            print(ready)
+            if not ready:
+                continue
             connection, client_address = sock.accept()
+            connection.settimeout(1)
             try:
                 print ('connection from', client_address,  file=sys.stderr)
                 # Receive the data in small chunks and retransmit it
-                while True:
-                    data = connection.recv(16)
-                    print ('received "%s"' % data,  file=sys.stderr)
-                    if data:
-                        print ('sending data back to the client',  file=sys.stderr)
+                while not exitTime.value:
+                    #data = connection.recv(1024)
+                    #print ('received "%s"' % data,  file=sys.stderr)
+                    #if data:
+                    #    print ('sending data back to the client',  file=sys.stderr)
                         # connection.sendall(data)
-                        break
-                    else:
-                        time.sleep(refresh_rate)
-                        dict_data = json.dumps(dict(dictionary))
-                        connection.sendall(dict_data.encode())
+                    #    break
+                    #else:
+                    dict_data = json.dumps(dict(dictionary))
+                    connection.sendall(dict_data.encode())
+                    time.sleep(refresh_rate)
                         # print ('no more data from', client_address,  file=sys.stderr)
                         #break
+            except:
+                print("connection closed")
 
             finally:
                 # Clean up the connection
@@ -66,7 +74,7 @@ def toDash(server_address, refresh_rate):
 
 def echo_server(address, sleep_seconds):
     signal.signal(signal.SIGINT, handleSIGINT)
-    sock = socket(AF_INET, SOCK_STREAM)
+    sock = socket.socket(AF_INET, SOCK_STREAM)
     #sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     sock.bind(address)
     sock.listen(5)
@@ -250,9 +258,4 @@ while True:
     if i % 100000 == 0:
     	print(jobs)
     i += 1
-# unix_server.py
-# https://docs.python.org/2/library/socket.html
-# Unix Sockets example Server
-import socket
-import os
-import sys
+    time.sleep(1)
