@@ -16,7 +16,6 @@ import multiprocessing
 import socket
 
 exitTime = multiprocessing.Value("B", False, lock=False)
-socketFile = "/tmp/mySocket"
 
 def handleSIGINT(signum, frame):
     print("RECEIVED SIGINT!!!")
@@ -26,17 +25,44 @@ def handleSIGINT(signum, frame):
     print("AGHHHHHHHHHHHHH!!!")
     exit()
 
-def toDash():
-    while not exitTime:
+def toDash(server_address, refresh_rate):
+    signal.signal(signal.SIGINT, handleSIGINT)
+    try:
+        os.unlink(server_address)
+    except OSError:
+        if os.path.exists(server_address):
+            raise
+    # Create a UDS socket
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    # Bind the socket to the port
+    print ('starting up on %s' % server_address, file=sys.stderr)
+    sock.bind(server_address)
+    # Listen for incoming connections
+    sock.listen(1)
+    while True:
+        # Wait for a connection
+            print ('waiting for a connection',  file=sys.stderr)
+            connection, client_address = sock.accept()
+            try:
+                print ('connection from', client_address,  file=sys.stderr)
+                # Receive the data in small chunks and retransmit it
+                while True:
+                    data = connection.recv(16)
+                    print ('received "%s"' % data,  file=sys.stderr)
+                    if data:
+                        print ('sending data back to the client',  file=sys.stderr)
+                        # connection.sendall(data)
+                        break
+                    else:
+                        time.sleep(refresh_rate)
+                        dict_data = json.dumps(dict(dictionary))
+                        connection.sendall(dict_data.encode())
+                        # print ('no more data from', client_address,  file=sys.stderr)
+                        #break
 
-        if os.path.exists(socketFile):
-            c = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            c.connect(socketFile)
-            dict_data = json.dumps(dict(dictionary))
-            c.send(dict_data.encode("utf-8"))
-        time.sleep(1)
-
-    c.close()
+            finally:
+                # Clean up the connection
+                connection.close()
 
 def echo_server(address, sleep_seconds):
     signal.signal(signal.SIGINT, handleSIGINT)
@@ -207,10 +233,10 @@ p = multiprocessing.Process(target=message)
 jobs.append(p)
 p.start()
 print("==2")
-p = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), .2))
+p = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.2))
 jobs.append(p)
 p.start()
-p = multiprocessing.Process(target=toDash)
+p = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
 jobs.append(p)
 p.start()
 print("==3")
@@ -224,3 +250,9 @@ while True:
     if i % 100000 == 0:
     	print(jobs)
     i += 1
+# unix_server.py
+# https://docs.python.org/2/library/socket.html
+# Unix Sockets example Server
+import socket
+import os
+import sys

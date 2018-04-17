@@ -2,18 +2,39 @@
 # Unix Sockets example Client
 import socket
 import os
+import sys
 
-socketFile = "/tmp/mySocket"
+server_address = "/tmp/mySocket"
 def main():
-    if os.path.exists(socketFile):
-        c = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        c.connect(socketFile)
+    # Create a UDS socket
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-        message = input("Enter Input -> ")
+    # Connect the socket to the port where the server is listening
+    print ('connecting to %s' % server_address, file=sys.stderr)
+    try:
+        sock.connect(server_address)
+    except socket.error as msg:
+        print (msg, file=sys.stderr)
+        sys.exit(1)
 
-        while True:
-            c.send(message.encode("utf-8"))
-            message = input("Enter Input -> ")
-        c.close()
+    try:
+
+        # Send data
+        message = b'This is the message.  It will be repeated.'
+        print ('sending "%s"' % message, file=sys.stderr)
+        sock.sendall(message)
+
+        amount_received = 0
+        amount_expected = len(message)
+
+        while amount_received < amount_expected:
+            data = sock.recv(16)
+            amount_received += len(data)
+            print ('received "%s"' % data, file=sys.stderr)
+
+    finally:
+        print ('closing socket', file=sys.stderr)
+        sock.close()
+
 if __name__ == '__main__':
     main()
