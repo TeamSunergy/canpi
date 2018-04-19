@@ -658,6 +658,183 @@ void interpretMessage(uint8_t canId, uint8_t messageBuf[], int bufferSize, char*
       break;
     }
 
+
+    /*
+     *	NOTE:
+     *	  mpptArrayVoltage should be interpreted as a float.
+     *	  mpptArrayVoltage is in Volts.
+     *	  mpptArrayCurrent should be interpreted as a float.
+     *	  mpptArrayCurrent is in Amps.
+     *	  mpptBatteryVoltage should be interpreted as a float.
+     *	  mpptBatteryVoltage is in Volts.
+     *	  mpptUnitTemperature should be interpreted as a float.
+     *	  mpptUnitTemperature is in Celsius.
+     */
+    case CAN_ID_MPPT_FRAME0:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_MPPT_FRAME_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      int arrayVoltage = messageBuf[MPPT_ARRAY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_VOLTAGE_LOW_BYTE];
+      int arrayCurrent = messageBuf[MPPT_ARRAY_CURRENT_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_CURRENT_LOW_BYTE];
+      int batteryVoltage = messageBuf[MPPT_BATTERY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_BATTERY_VOLTAGE_LOW_BYTE];
+      int unitTemperature = messageBuf[MPPT_UNIT_TEMPERATURE_HIGH_BYTE] << 8 | messageBuf[MPPT_UNIT_TEMPERATURE_LOW_BYTE];
+
+      convertAndScaleIntToFloat(&arrayVoltage, MPPT_ARRAY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&arrayCurrent, MPPT_ARRAY_CURRENT_SCALE);
+      convertAndScaleIntToFloat(&batteryVoltage, MPPT_BATTERY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&unitTemperature, MPPT_UNIT_TEMPERATURE_SCALE);
+
+      retStr[0] = "mppt0ArrayVoltage";
+      retStr[1] = "mppt0ArrayCurrent";
+      retStr[2] = "mppt0BatteryVoltage";
+      retStr[3] = "mppt0UnitTemperature";
+      retValues[0] = arrayVoltage;
+      retValues[1] = arrayCurrent;
+      retValues[2] = batteryVoltage;
+      retValues[3] = unitTemperature;
+      retType[0] = "float";
+      retType[1] = "float";
+      retType[2] = "float";
+      retType[3] = "float";
+      *numRetValues = 4;
+      break;
+    }
+
+    /*
+     *	NOTE:
+     *	  mpptArrayVoltage should be interpreted as a float.
+     *	  mpptArrayVoltage is in Volts.
+     *	  mpptArrayCurrent should be interpreted as a float.
+     *	  mpptArrayCurrent is in Amps.
+     *	  mpptBatteryVoltage should be interpreted as a float.
+     *	  mpptBatteryVoltage is in Volts.
+     *	  mpptUnitTemperature should be interpreted as a float.
+     *	  mpptUnitTemperature is in Celsius.
+     */
+    case CAN_ID_MPPT_FRAME1:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_MPPT_FRAME_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      int arrayVoltage = messageBuf[MPPT_ARRAY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_VOLTAGE_LOW_BYTE];
+      int arrayCurrent = messageBuf[MPPT_ARRAY_CURRENT_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_CURRENT_LOW_BYTE];
+      int batteryVoltage = messageBuf[MPPT_BATTERY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_BATTERY_VOLTAGE_LOW_BYTE];
+      int unitTemperature = messageBuf[MPPT_UNIT_TEMPERATURE_HIGH_BYTE] << 8 | messageBuf[MPPT_UNIT_TEMPERATURE_LOW_BYTE];
+
+      convertAndScaleIntToFloat(&arrayVoltage, MPPT_ARRAY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&arrayCurrent, MPPT_ARRAY_CURRENT_SCALE);
+      convertAndScaleIntToFloat(&batteryVoltage, MPPT_BATTERY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&unitTemperature, MPPT_UNIT_TEMPERATURE_SCALE);
+
+      retStr[0] = "mppt1ArrayVoltage";
+      retStr[1] = "mppt1ArrayCurrent";
+      retStr[2] = "mppt1BatteryVoltage";
+      retStr[3] = "mppt1UnitTemperature";
+      retValues[0] = arrayVoltage;
+      retValues[1] = arrayCurrent;
+      retValues[2] = batteryVoltage;
+      retValues[3] = unitTemperature;
+      retType[0] = "float";
+      retType[1] = "float";
+      retType[2] = "float";
+      retType[3] = "float";
+      *numRetValues = 4;
+      break;
+    }
+
+    /*
+     *	NOTE:
+     *	  mpptArrayVoltage should be interpreted as a float.
+     *	  mpptArrayVoltage is in Volts.
+     *	  mpptArrayCurrent should be interpreted as a float.
+     *	  mpptArrayCurrent is in Amps.
+     *	  mpptBatteryVoltage should be interpreted as a float.
+     *	  mpptBatteryVoltage is in Volts.
+     *	  mpptUnitTemperature should be interpreted as a float.
+     *	  mpptUnitTemperature is in Celsius.
+     */
+    case CAN_ID_MPPT_FRAME2:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_MPPT_FRAME_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      int arrayVoltage = messageBuf[MPPT_ARRAY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_VOLTAGE_LOW_BYTE];
+      int arrayCurrent = messageBuf[MPPT_ARRAY_CURRENT_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_CURRENT_LOW_BYTE];
+      int batteryVoltage = messageBuf[MPPT_BATTERY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_BATTERY_VOLTAGE_LOW_BYTE];
+      int unitTemperature = messageBuf[MPPT_UNIT_TEMPERATURE_HIGH_BYTE] << 8 | messageBuf[MPPT_UNIT_TEMPERATURE_LOW_BYTE];
+
+      convertAndScaleIntToFloat(&arrayVoltage, MPPT_ARRAY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&arrayCurrent, MPPT_ARRAY_CURRENT_SCALE);
+      convertAndScaleIntToFloat(&batteryVoltage, MPPT_BATTERY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&unitTemperature, MPPT_UNIT_TEMPERATURE_SCALE);
+
+      retStr[0] = "mppt2ArrayVoltage";
+      retStr[1] = "mppt2ArrayCurrent";
+      retStr[2] = "mppt2BatteryVoltage";
+      retStr[3] = "mppt2UnitTemperature";
+      retValues[0] = arrayVoltage;
+      retValues[1] = arrayCurrent;
+      retValues[2] = batteryVoltage;
+      retValues[3] = unitTemperature;
+      retType[0] = "float";
+      retType[1] = "float";
+      retType[2] = "float";
+      retType[3] = "float";
+      *numRetValues = 4;
+      break;
+    }
+
+    /*
+     *	NOTE:
+     *	  mpptArrayVoltage should be interpreted as a float.
+     *	  mpptArrayVoltage is in Volts.
+     *	  mpptArrayCurrent should be interpreted as a float.
+     *	  mpptArrayCurrent is in Amps.
+     *	  mpptBatteryVoltage should be interpreted as a float.
+     *	  mpptBatteryVoltage is in Volts.
+     *	  mpptUnitTemperature should be interpreted as a float.
+     *	  mpptUnitTemperature is in Celsius.
+     */
+    case CAN_ID_MPPT_FRAME3:
+    {
+      if (!isValidMessageLength(canId, CAN_ID_MPPT_FRAME_LEN, bufferSize)) {
+	*numRetValues = 0;
+	break;
+      }
+
+      int arrayVoltage = messageBuf[MPPT_ARRAY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_VOLTAGE_LOW_BYTE];
+      int arrayCurrent = messageBuf[MPPT_ARRAY_CURRENT_HIGH_BYTE] << 8 | messageBuf[MPPT_ARRAY_CURRENT_LOW_BYTE];
+      int batteryVoltage = messageBuf[MPPT_BATTERY_VOLTAGE_HIGH_BYTE] << 8 | messageBuf[MPPT_BATTERY_VOLTAGE_LOW_BYTE];
+      int unitTemperature = messageBuf[MPPT_UNIT_TEMPERATURE_HIGH_BYTE] << 8 | messageBuf[MPPT_UNIT_TEMPERATURE_LOW_BYTE];
+
+      convertAndScaleIntToFloat(&arrayVoltage, MPPT_ARRAY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&arrayCurrent, MPPT_ARRAY_CURRENT_SCALE);
+      convertAndScaleIntToFloat(&batteryVoltage, MPPT_BATTERY_VOLTAGE_SCALE);
+      convertAndScaleIntToFloat(&unitTemperature, MPPT_UNIT_TEMPERATURE_SCALE);
+
+      retStr[0] = "mppt3ArrayVoltage";
+      retStr[1] = "mppt3ArrayCurrent";
+      retStr[2] = "mppt3BatteryVoltage";
+      retStr[3] = "mppt3UnitTemperature";
+      retValues[0] = arrayVoltage;
+      retValues[1] = arrayCurrent;
+      retValues[2] = batteryVoltage;
+      retValues[3] = unitTemperature;
+      retType[0] = "float";
+      retType[1] = "float";
+      retType[2] = "float";
+      retType[3] = "float";
+      *numRetValues = 4;
+      break;
+    }
+
     default:
     {
 

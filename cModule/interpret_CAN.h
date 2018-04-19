@@ -38,6 +38,11 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define CAN_ID_THERMISTOR_FRAME0 0x80
 #define CAN_ID_THERMISTOR_FRAME1 0x81
 #define CAN_ID_THERMISTOR_FRAME2 0x82
+#define CAN_ID_MPPT_FRAME0 0xC0
+#define CAN_ID_MPPT_FRAME1 0xC1
+#define CAN_ID_MPPT_FRAME2 0xC2
+#define CAN_ID_MPPT_FRAME3 0xC3
+
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // CAN Message Data Length
@@ -65,6 +70,7 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define CAN_ID_THERMISTOR_FRAME0_LEN 4
 #define CAN_ID_THERMISTOR_FRAME1_LEN 4
 #define CAN_ID_THERMISTOR_FRAME2_LEN 8
+#define CAN_ID_MPPT_FRAME_LEN 8
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //BPS Definitions
@@ -121,6 +127,22 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define MOTOR_CONTROLLER_LIMIT_VELOCITY_BIT 2
 #define MOTOR_CONTROLLER_LIMIT_MOTOR_CURRENT_BIT 1
 #define MOTOR_CONTROLLER_LIMIT_OUTPUT_VOLTAGE_PWM_BIT 0
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+//MPPT Definitions
+//=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+#define MPPT_ARRAY_VOLTAGE_HIGH_BYTE 1
+#define MPPT_ARRAY_VOLTAGE_LOW_BYTE  0
+#define MPPT_ARRAY_CURRENT_HIGH_BYTE 3
+#define MPPT_ARRAY_CURRENT_LOW_BYTE  2
+#define MPPT_BATTERY_VOLTAGE_HIGH_BYTE 5
+#define MPPT_BATTERY_VOLTAGE_LOW_BYTE  4
+#define MPPT_UNIT_TEMPERATURE_HIGH_BYTE 7
+#define MPPT_UNIT_TEMPERATURE_LOW_BYTE  6
+#define MPPT_ARRAY_VOLTAGE_SCALE 0.01f
+#define MPPT_ARRAY_CURRENT_SCALE 0.001f
+#define MPPT_BATTERY_VOLTAGE_SCALE 0.01f
+#define MPPT_UNIT_TEMPERATURE_SCALE 0.01f
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 //MISC Definitions
