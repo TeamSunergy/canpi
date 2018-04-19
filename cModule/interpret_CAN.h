@@ -38,6 +38,10 @@ int isValidMessageLength(uint8_t canId, uint32_t expectedLength, uint32_t actual
 #define CAN_ID_THERMISTOR_FRAME0 0x80
 #define CAN_ID_THERMISTOR_FRAME1 0x81
 #define CAN_ID_THERMISTOR_FRAME2 0x82
+#define CAN_ID_MPPT_ORIGINAL0 0x600
+#define CAN_ID_MPPT_ORIGINAL1 0x602
+#define CAN_ID_MPPT_ORIGINAL2 0x604
+#define CAN_ID_MPPT_ORIGINAL3 0x606
 #define CAN_ID_MPPT_FRAME0 0xC0
 #define CAN_ID_MPPT_FRAME1 0xC1
 #define CAN_ID_MPPT_FRAME2 0xC2

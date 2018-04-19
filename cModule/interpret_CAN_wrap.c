@@ -34,9 +34,21 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
   //Parse the arguments
   PyArg_ParseTuple(args, "hy#:interpretMessage", &canID, &byteBuffer, &bufferSize);
 
-  if (canID > 255 || canID < 0) {
-	  fprintf(stderr,"Error in CModule. Invalid CANID. CANID is greater than 255 or less than 0.\n");
-	  return Py_BuildValue("s", "");
+  //Bring MPPT CAN IDs to a sane value ( 0 - 255 ) 
+  if (canID == CAN_ID_MPPT_ORIGINAL0) {
+    canID = CAN_ID_MPPT_FRAME0;
+  } else if (canID == CAN_ID_MPPT_ORIGINAL1) {
+    canID = CAN_ID_MPPT_FRAME1;
+  } else if (canID == CAN_ID_MPPT_ORIGINAL2) {
+    canID = CAN_ID_MPPT_FRAME2;
+  } else if (canID == CAN_ID_MPPT_ORIGINAL3) {
+    canID = CAN_ID_MPPT_FRAME3;
+  }
+
+
+  if (canID > 255) {	  
+    fprintf(stderr,"Error in CModule. Invalid CANID. CANID is greater than 255 or less than 0.\n");
+    return Py_BuildValue("s", "");
   }
 
   interpretMessage(canID, byteBuffer, bufferSize, retVariableNames, retVariableValues, retTypes, &listLen);
