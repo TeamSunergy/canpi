@@ -39,6 +39,7 @@ try :
                 bus.send(msg)
                 count += 1
                 print(count)
+                time.sleep(0.001)
 
 except KeyboardInterrupt:
     # Catch keyboard interrupt

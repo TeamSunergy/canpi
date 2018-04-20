@@ -71,6 +71,11 @@ def toDash(server_address, refresh_rate):
             finally:
                 # Clean up the connection
                 connection.close()
+    try:
+        connection.close()
+    except:
+        pass
+    os.unlink(server_address)
 
 def echo_server(address, sleep_seconds):
     signal.signal(signal.SIGINT, handleSIGINT)
@@ -224,10 +229,10 @@ def initDictionary():
 
 signal.signal(signal.SIGINT, handleSIGINT)
 
-#faulthandler.enable()
+# faulthandler.enable()
 # network settings
 channel = "vcan0"
-#bitrate = 128000  # 128000 if useing can0
+# bitrate = 125000  # 125000 if using can0
 manager = multiprocessing.Manager()
 dictionary = manager.dict()
 print(str(dict(dictionary)))
