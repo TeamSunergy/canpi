@@ -47,7 +47,7 @@ static PyObject *_wrap_interpretMessage(PyObject* self, PyObject *args) {
 
 
   if (canID > 255) {	  
-    fprintf(stderr,"Error in CModule. Invalid CANID. CANID is greater than 255 or less than 0.\n");
+    fprintf(stderr,"Error in CModule. Invalid CANID of %d. CANID is greater than 255 or less than 0.\n", canID);
     return Py_BuildValue("s", "");
   }
 

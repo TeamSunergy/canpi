@@ -15,18 +15,8 @@ import signal
 import multiprocessing
 import socket
 import select
-exitTime = multiprocessing.Value("B", False, lock=False)
-
-def handleSIGINT(signum, frame):
-    print("RECEIVED SIGINT!!!")
-
-    exitTime.value = True
-    print(dictionary)
-    print("AGHHHHHHHHHHHHH!!!")
-    exit()
 
 def toDash(server_address, refresh_rate):
-    signal.signal(signal.SIGINT, handleSIGINT)
     try:
         os.unlink(server_address)
     except OSError:
@@ -40,70 +30,51 @@ def toDash(server_address, refresh_rate):
     sock.setblocking(False)
     # Listen for incoming connections
     sock.listen(1)
-    while not exitTime.value:
+    while True:
         # Wait for a connection
-            print ('waiting for a connection',  file=sys.stderr)
-            ready = select.select([sock], [], [], 5)[0]
-            print(ready)
-            if not ready:
-                continue
-            connection, client_address = sock.accept()
-            connection.settimeout(1)
-            try:
-                print ('connection from', client_address,  file=sys.stderr)
-                # Receive the data in small chunks and retransmit it
-                while not exitTime.value:
-                    #data = connection.recv(1024)
-                    #print ('received "%s"' % data,  file=sys.stderr)
-                    #if data:
-                    #    print ('sending data back to the client',  file=sys.stderr)
-                        # connection.sendall(data)
-                    #    break
-                    #else:
-                    dict_data = json.dumps(dict(dictionary))
-                    connection.sendall(dict_data.encode())
-                    time.sleep(refresh_rate)
-                        # print ('no more data from', client_address,  file=sys.stderr)
-                        #break
-            except:
-                print("connection closed")
+        print ('waiting for a connection',  file=sys.stderr)
+        ready = select.select([sock], [], [], 5)[0]
+        print(ready)
+        if not ready:
+            continue
+        connection, client_address = sock.accept()
+        try:
+            print ('connection from', server_address,  file=sys.stderr) # server_address is hacky
+            # Receive the data in small chunks and retransmit it
+            while True:
+                connection.settimeout(5)
+                dict_data = json.dumps(dict(dictionary))
+                connection.sendall(dict_data.encode())
+                time.sleep(refresh_rate)
+        except:
+            print("connection closed")
 
-            finally:
-                # Clean up the connection
-                connection.close()
-    try:
-        connection.close()
-    except:
-        pass
-    os.unlink(server_address)
+        finally:
+            # Clean up the connection
+            connection.close()
+            os.unlink(server_address)
 
 def echo_server(address, sleep_seconds):
-    signal.signal(signal.SIGINT, handleSIGINT)
     sock = socket.socket(AF_INET, SOCK_STREAM)
     #sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     sock.bind(address)
+    sock.settimeout(5)
     sock.listen(5)
     print("Server started. Host: %s Port: %s " % (address[0],address[1]))
     #sock.setblocking(False)
     count = 0
-    while not exitTime.value:
-        #while True:
-            #if count > 200:
-            #    print("==--------------------------------------------------------------------------------------")
-            #    time.sleep(2)
-            #    print("==2-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
-            #    count = 100 / 0
-            #count +=
-        client, address = sock.accept()
+    while True:
+        try:
+            client, address = sock.accept()
+        except:
+            print("haha")
+            continue
         print('Connection from: ', address)
-        #loop.create_task(echo_handler(client,sleep_seconds))
         multiprocessing.Process(target=echo_handler, args=(client, sleep_seconds)).start()
         time.sleep(1)
 
 def echo_handler(client, sleep_seconds):
-    signal.signal(signal.SIGINT, handleSIGINT)
-    while not exitTime.value:
-        #print(json.dumps(dictionary, indent = 4))
+    while True:
         print(dictionary)
         time.sleep(sleep_seconds)
         dict_data = json.dumps(dict(dictionary))
@@ -130,44 +101,32 @@ def message():
     except OSError:
         print("Interface " + channel + " Down.")
         exit()
+        
+    while True:
+        message = buffRead.get_message()
+        if (message is not None):
+            newData = base64.b64encode(message.data) #This is a hack,
+            newData = base64.b64decode(newData)      #convert byte array to bytes
+            lst = interpret.interpret(message.arbitration_id, newData)
 
-    initDictionary()
-    while not exitTime.value:
-        try:
-            message = buffRead.get_message()
-            #print("lolololololo")
-            if (message is not None):
-                newData = base64.b64encode(message.data) #This is a hack,
-                newData = base64.b64decode(newData)      #convert byte array to bytes
-                #print(hex(message.arbitration_id) + "||" + str(newData))
-                lst = interpret.interpret(message.arbitration_id, newData)
-
-                if (lst == ""):
-                    print("255 sucks")
-                    continue
-                for x in lst:
-                    m = None
-                    if x[2] == "float":
-                        m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))[0]
-                    elif x[2] == "boolean":
-                        if x[1] == 1:
-                            m = True
-                        else:
-                            m = False
-                    elif x[2] == "int":
-                        m = x[1]
+            if (lst == ""):
+                continue
+            for x in lst:
+                m = None
+                if x[2] == "float":
+                    m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))[0]
+                elif x[2] == "boolean":
+                    if x[1] == 1:
+                        m = True
                     else:
-                        raise RuntimeError("Unknown type received from interpret: " + x[2])
-                    dictionary[x[0]] = m
-                dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
-                dictionary["timeSent"] = str(datetime.datetime.now())
-                time.sleep(0)
-        except KeyboardInterrupt:
-            # Closes the notifer which closes the Listeners as well
-            notifier.stop()
-            print("Keyboard interrupt")
-            print(dictionary)
-            exit()
+                        m = False
+                elif x[2] == "int":
+                    m = x[1]
+                else:
+                    raise RuntimeError("Unknown type received from interpret: " + x[2])
+                dictionary[x[0]] = m
+            dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
+            dictionary["timeSent"] = str(datetime.datetime.now())
 
 def initDictionary():
     dictionary["bpsHighVoltage"] = 0.0
@@ -225,9 +184,24 @@ def initDictionary():
     dictionary["motConSlipSpeed"] = 0.0
     dictionary["InvalidCanMessage"] = int(0)
     dictionary["netPower"] = 0.0
+    dictionary["mppt0ArrayVoltage"] = 0.0
+    dictionary["mppt0ArrayCurrent"] = 0.0
+    dictionary["mppt0BatteryVoltage"] = 0.0
+    dictionary["mppt0UnitTemperature"] = 0.0
+    dictionary["mppt1ArrayVoltage"] = 0.0
+    dictionary["mppt1ArrayCurrent"] = 0.0
+    dictionary["mppt1BatteryVoltage"] = 0.0
+    dictionary["mppt1UnitTemperature"] = 0.0
+    dictionary["mppt2ArrayVoltage"] = 0.0
+    dictionary["mppt2ArrayCurrent"] = 0.0
+    dictionary["mppt2BatteryVoltage"] = 0.0
+    dictionary["mppt2UnitTemperature"] = 0.0
+    dictionary["mppt3ArrayVoltage"] = 0.0
+    dictionary["mppt3ArrayCurrent"] = 0.0
+    dictionary["mppt3BatteryVoltage"] = 0.0
+    dictionary["mppt3UnitTemperature"] = 0.0
 
 
-signal.signal(signal.SIGINT, handleSIGINT)
 
 # faulthandler.enable()
 # network settings
@@ -235,32 +209,57 @@ channel = "vcan0"
 # bitrate = 125000  # 125000 if using can0
 manager = multiprocessing.Manager()
 dictionary = manager.dict()
+
+initDictionary()
 print(str(dict(dictionary)))
 print("CAN RECV test")
 
-jobs = []
-#while True:
-print("==1")
-#loop = asyncio.get_event_loop()
-p = multiprocessing.Process(target=message)
-jobs.append(p)
-p.start()
-print("==2")
-p = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.2))
-jobs.append(p)
-p.start()
-p = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
-jobs.append(p)
-p.start()
-print("==3")
-#loop.run_in_executor(None, echo_server(('0.0.0.0',25000),loop,.2))
-#print("==4" + asyncio.all_tasks())
-#time.sleep(5)
-print("==5")
-i = 0
-while True:
-    #time.sleep(1)
-    if i % 100000 == 0:
-    	print(jobs)
-    i += 1
-    time.sleep(1)
+try:
+
+    messageProcess = multiprocessing.Process(target=message)
+    messageProcess.daemon = True
+    messageProcess.start()
+
+    echoProcess = multiprocessing.Process(target=echo_server, args=(('192.168.0.116',25000), 0.2))
+    #echoProcess.daemon = True
+    echoProcess.start()
+
+    toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+    toDashProcess.daemon = True
+    toDashProcess.start()
+    
+    while True:
+        if not messageProcess.is_alive():
+            messageProcess.terminate()
+            messageProcess.join()
+            messageProcess = multiprocessing.Process(target=message)
+            messageProcess.daemon = True
+            messageProcess.start()
+            print("Restarted messageProcess.")
+        if not echoProcess.is_alive():
+            echoProcess.terminate()
+            echoProcess.join()
+            echoProcess = multiprocessing.Process(target=echo_server, args=(('192.168.0.116',25000), 0.2))
+            #echoProcess.daemon = True
+            echoProcess.start()
+            print("Restarted echoProcess.")
+        if not toDashProcess.is_alive():
+            toDashProcess.terminate()
+            toDashProcess.join()
+            toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+            toDashProcess.daemon = True
+            toDashProcess.start()
+            print("Restarted toDashProcess.")
+            
+        time.sleep(.1)
+        #print(str(dict(dictionary)))
+	
+except KeyboardInterrupt:
+    # Closes the notifer which closes the Listeners as well
+    #notifier.stop()
+    print("Keyboard interrupt")
+    #print(dict(dictionary))
+    echoProcess.terminate()
+    echoProcess.join()
+    print()
+    exit()

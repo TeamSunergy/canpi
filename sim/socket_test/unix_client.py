@@ -10,11 +10,11 @@ def main():
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
     # Connect the socket to the port where the server is listening
-    print ('connecting to %s' % server_address, file=sys.stderr)
+    #print ('connecting to %s' % server_address, file=sys.stderr)
     try:
         sock.connect(server_address)
     except socket.error as msg:
-        print (msg, file=sys.stderr)
+        print (msg)
         sys.exit(1)
 
     try:
@@ -31,10 +31,10 @@ def main():
         while True:
             data = sock.recv(32)
             #amount_received += len(data)
-            print ('received "%s"' % data, file=sys.stderr)
+            print ('received "%s"' % data)
 
     finally:
-        print ('closing socket', file=sys.stderr)
+        #print ('closing socket', file=sys.stderr)
         sock.close()
 
 if __name__ == '__main__':
