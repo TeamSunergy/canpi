@@ -10,8 +10,8 @@ import base64
 count = 0
 
 # network settings
-channel = "vcan0"
-bitrate = 128000
+channel = "can1"
+bitrate = 125000
 
 #os.system("sudo /sbin/ip link set " + channel + " up type vcan")
 print("Press CTRL-C to exit")

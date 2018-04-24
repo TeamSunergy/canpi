@@ -2,7 +2,6 @@
 from socket import *
 import datetime
 import json
-import asyncio
 import can
 import os
 import binascii
@@ -11,85 +10,142 @@ import struct
 import time
 import base64
 import faulthandler
-async def echo_server(address, loop, sleep_seconds):
-    sock = socket(AF_INET, SOCK_STREAM)
-    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-    sock.bind(address)
-    sock.listen(1)
-    print("Server started. Host: %s Port: %s " % (address[0],address[1]))
+import sys
+import signal
+import multiprocessing
+import socket
+import select
+
+def toDash(server_address, refresh_rate):
+    try:
+        os.unlink(server_address)
+    except OSError:
+        if os.path.exists(server_address):
+            raise
+    # Create a UDS socket
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    # Bind the socket to the port
+    print ('starting up on %s' % server_address, file=sys.stderr)
+    sock.bind(server_address)
     sock.setblocking(False)
+    # Listen for incoming connections
+    sock.listen(1)
     while True:
-        client, address = await loop.sock_accept(sock)
-        print('Connection from: ', address)
-        loop.create_task(echo_handler(client,sleep_seconds))
+        # Wait for a connection
+        print ('waiting for a connection',  file=sys.stderr)
+        ready = select.select([sock], [], [], 5)[0]
+        if not ready:
+            continue
+        connection, client_address = sock.accept()
+        try:
+            print ('connection from', server_address,  file=sys.stderr) # server_address is hacky
+            # Receive the data in small chunks and retransmit it
+            while True:
+                connection.settimeout(5)
+                dict_data = json.dumps(dict(dictionary))
+                connection.sendall(dict_data.encode())
+                time.sleep(refresh_rate)
+        except:
+            print("connection closed")
 
-async def echo_handler(client, sleep_seconds):
-    while True:
-        #print(json.dumps(dictionary, indent = 4))
-        await asyncio.sleep(sleep_seconds)
-        dict_data = json.dumps(dictionary)
-        await loop.sock_sendall(client,dict_data.encode())
-        print("Sent user JSON @", datetime.datetime.now())
+        finally:
+            # Clean up the connection
+            connection.close()
+            os.unlink(server_address)
 
-def message():
-    count = 0;
-    initDictionary()
+def echo_server(address, sleep_seconds):
+    sock = socket.socket(AF_INET, SOCK_STREAM)
+    #sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    sock.bind(address)
+    sock.settimeout(5)
+    sock.listen(3)
+    print("Server started. Host: %s Port: %s " % (address[0],address[1]))
+    #sock.setblocking(False)
+    count = 0
     while True:
         try:
-            message = buffRead.get_message()
-            if (message is not None):
-                count += 1
-                print(count)
-                newData = base64.b64encode(message.data) #This is a hack,
-                newData = base64.b64decode(newData)      #convert byte array to bytes
-                print(hex(message.arbitration_id) + "||" + str(newData))
-                lst = interpret.interpret(message.arbitration_id, newData)
+            client, address = sock.accept()
+        except:
+            continue
+        print('Connection from: ', address)
+        multiprocessing.Process(target=echo_handler, args=(client, sleep_seconds)).start()
+        time.sleep(1)
 
-                if (lst == ""):
-                    print("255 sucks")
-                    continue
-                for x in lst:
-                    m = None
-                    if x[2] == "float":
-                        m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))[0]
-                    elif x[2] == "boolean":
-                        if x[1] == 1:
-                            m = True
-                        else:
-                            m = False
-                    elif x[2] == "int":
-                        m = x[1]
+def echo_handler(client, sleep_seconds):
+    while True:
+        print(dictionary)
+        time.sleep(sleep_seconds)
+        dict_data = json.dumps(dict(dictionary))
+
+        client.sendall(dict_data.encode())
+        print("Sent user JSON @", datetime.datetime.now())
+        print("-=-=-=-=-==-=-==-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+
+def message():
+    try:
+        # Initalizes can bus
+        bus = can.interface.Bus(channel=channel, bustype="socketcan_native")
+        # Creates a device that can be used to get messages from the canbus
+        buffRead = can.BufferedReader()
+        # Creates a device that logs all canbus messages to a csv file
+        # NOTE: encodes data in base64
+        logger = can.CSVWriter("test.csv")
+        """
+        Creates a notifier object which accepts an array of objects of the can.Listener class
+        Whenever it receves a message from bus it calls the Listeners in the array
+        and lets them handle the message.
+        """
+        notifier = can.Notifier(bus, [buffRead, logger], timeout=1)
+    except OSError:
+        print("Interface " + channel + " Down.")
+        exit()
+    while True:
+        message = buffRead.get_message()
+        if (message is not None):
+            newData = base64.b64encode(message.data) #This is a hack,
+            newData = base64.b64decode(newData)      #convert byte array to bytes
+            lst = interpret.interpret(message.arbitration_id, newData)
+
+            if (lst == ""):
+                continue
+            for x in lst:
+                m = None
+                if x[2] == "float":
+                    m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))[0]
+                elif x[2] == "boolean":
+                    if x[1] == 1:
+                        m = True
                     else:
-                        raise RuntimeError("Unknown type received from interpret: " + x[2])
-                    dictionary[x[0]] = m
-                dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
-                dictionary["timeSent"] = str(datetime.datetime.now())
-                time.sleep(0)
-        except KeyboardInterrupt:
-            # Closes the notifer which closes the Listeners as well
-            notifier.stop()
-            print("Keyboard interrupt")
-            print(dictionary)
-            exit()
+                        m = False
+                elif x[2] == "int":
+                    m = x[1]
+                else:
+                    raise RuntimeError("Unknown type received from interpret: " + x[2])
+                dictionary[x[0]] = m
+            dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
+            dictionary["timeSent"] = str(datetime.datetime.now())
+    # Closes the notifer which closes the Listeners as well
+    notifier.stop()
+
 
 def initDictionary():
     dictionary["bpsHighVoltage"] = 0.0
     dictionary["bpsLowVoltage"] = 0.0
     dictionary["packAmpHours"] = 0.0
-    dictionary["packTotalCycles"] = int(0)
-    dictionary["packHealth"] = int(0)
-    dictionary["highestCellTemperature"] = int(0)
-    dictionary["lowestCellTemperature"] = int(0)
-    dictionary["averageCellTemperature"] = int(0)
-    dictionary["internalBPSTemperature"] = int(0)
+    dictionary["packTotalCycles"] = 0
+    dictionary["packHealth"] = 0
+    dictionary["highestCellTemperature"] = 0
+    dictionary["lowestCellTemperature"] = 0
+    dictionary["averageCellTemperature"] = 0
+    dictionary["internalBPSTemperature"] = 0
     dictionary["batteryPackCurrent"] = 0.0
     dictionary["batteryPackInstantaneousVoltage"] = 0.0
     dictionary["batteryPackSummedVoltage"] = 0.0
     dictionary["motConSerialNumber"] = 0
-    dictionary["motConTritiumID"] = int(0)
-    dictionary["motConReceiveErrorCount"] = int(0)
-    dictionary["motConTransmitErrorCount"] = int(0)
-    dictionary["motConActiveMotor"] = int(0)
+    dictionary["motConTritiumID"] = 0
+    dictionary["motConReceiveErrorCount"] = 0
+    dictionary["motConTransmitErrorCount"] = 0
+    dictionary["motConActiveMotor"] = 0
     dictionary["motConErrorMotorOverSpeed"] = False
     dictionary["motConErrorDesaturation"] = False
     dictionary["motConErrorUVLO"] = False
@@ -126,35 +182,79 @@ def initDictionary():
     dictionary["motConDCBusAmpHours"] = 0.0
     dictionary["motConOdometer"] = 0.0
     dictionary["motConSlipSpeed"] = 0.0
-    dictionary["InvalidCanMessage"] = int(0)
+    dictionary["InvalidCanMessage"] = 0
     dictionary["netPower"] = 0.0
+    dictionary["mppt0ArrayVoltage"] = 0.0
+    dictionary["mppt0ArrayCurrent"] = 0.0
+    dictionary["mppt0BatteryVoltage"] = 0.0
+    dictionary["mppt0UnitTemperature"] = 0.0
+    dictionary["mppt1ArrayVoltage"] = 0.0
+    dictionary["mppt1ArrayCurrent"] = 0.0
+    dictionary["mppt1BatteryVoltage"] = 0.0
+    dictionary["mppt1UnitTemperature"] = 0.0
+    dictionary["mppt2ArrayVoltage"] = 0.0
+    dictionary["mppt2ArrayCurrent"] = 0.0
+    dictionary["mppt2BatteryVoltage"] = 0.0
+    dictionary["mppt2UnitTemperature"] = 0.0
+    dictionary["mppt3ArrayVoltage"] = 0.0
+    dictionary["mppt3ArrayCurrent"] = 0.0
+    dictionary["mppt3BatteryVoltage"] = 0.0
+    dictionary["mppt3UnitTemperature"] = 0.0
+    dictionary["timeSent"] = 0.0
 
-if __name__ == '__main__':
-    faulthandler.enable()
-    # network settings
-    channel = "vcan0"
-    #bitrate = 128000  # 128000 if useing can0
-    dictionary = {}
-    print("CAN RECV test")
 
-    try:
-        # Initalizes can bus
-        bus = can.interface.Bus(channel=channel, bustype="socketcan_native")
-        # Creates a device that can be used to get messages from the canbus
-        buffRead = can.BufferedReader()
-        # Creates a device that logs all canbus messages to a csv file
-        # NOTE: encodes data in base64
-        logger = can.CSVWriter("test.csv")
-        """
-        Creates a notifier object which accepts an array of objects of the can.Listener class
-        Whenever it receves a message from bus it calls the Listeners in the array
-        and lets them handle the message.
-        """
-        notifier = can.Notifier(bus, [buffRead, logger], timeout=1)
-    except OSError:
-        print("Interface " + channel + " Down.")
-        exit()
-    
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, message)
-    loop.run_until_complete(echo_server(('0.0.0.0',25000),loop,.2))
+# faulthandler.enable()
+# network settings
+channel = "can0"
+# bitrate = 125000  # 125000 if using can0
+manager = multiprocessing.Manager()
+dictionary = manager.dict()
+
+initDictionary()
+print(str(dict(dictionary)))
+print("CAN RECV test")
+
+try:
+
+    messageProcess = multiprocessing.Process(target=message)
+    messageProcess.daemon = True
+    messageProcess.start()
+
+    echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
+    #echoProcess.daemon = True # damonized processes can't spawn child processes
+    echoProcess.start()
+
+    toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+    toDashProcess.daemon = True
+    toDashProcess.start()
+    while True:
+        if not messageProcess.is_alive():
+            messageProcess.terminate()
+            messageProcess.join()
+            messageProcess = multiprocessing.Process(target=message)
+            messageProcess.daemon = True
+            messageProcess.start()
+            print("Restarted messageProcess.")
+        if not echoProcess.is_alive():
+            echoProcess.terminate()
+            echoProcess.join()
+            echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
+            #echoProcess.daemon = True
+            echoProcess.start()
+            print("Restarted echoProcess.")
+        if not toDashProcess.is_alive():
+            toDashProcess.terminate()
+            toDashProcess.join()
+            toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+            toDashProcess.daemon = True
+            toDashProcess.start()
+            print("Restarted toDashProcess.")
+        time.sleep(.1)
+
+except KeyboardInterrupt:
+    print("Keyboard interrupt")
+    #print(dict(dictionary))
+    echoProcess.terminate()
+    echoProcess.join()
+    print()
+    exit()
