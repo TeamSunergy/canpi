@@ -15,6 +15,12 @@ import signal
 import multiprocessing
 import socket
 import select
+import pynmea2
+import serial
+
+#import cProfile
+#import pstats
+#import io
 
 def toDash(server_address, refresh_rate):
     try:
@@ -52,6 +58,32 @@ def toDash(server_address, refresh_rate):
             # Clean up the connection
             connection.close()
             os.unlink(server_address)
+def gpsStuff():
+    print("hi")
+    ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5)
+    print("my")
+    for i in range(5):
+        ser.readline()
+    print("name")
+    map = {"N": 1, "S": -1, "E": 1, "W": -1}
+
+    while True:
+        try:
+            data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
+            print("is")
+        except:
+            continue
+        if str(data).startswith("$GPRMC") and data.data[2] != "" and data.data[4] != "":
+            print(data.data[2] + " " + data.data[4])
+
+            lat = float(data.data[2])
+            lon = float(data.data[4])
+            lat = map[data.data[3]] * (lat // 10**2 + (lat - (lat // 10**2) * 100) / 60)
+            lon = map[data.data[5]] * (lon // 10**2 + (lon - (lon // 10**2) * 100) / 60)
+            print("lololololol")
+            dictionary["coordinates"] = (lat, lon)
+    ser.close()
+
 
 def echo_server(address, sleep_seconds):
     sock = socket.socket(AF_INET, SOCK_STREAM)
@@ -89,7 +121,7 @@ def message():
         buffRead = can.BufferedReader()
         # Creates a device that logs all canbus messages to a csv file
         # NOTE: encodes data in base64
-        logger = can.CSVWriter("test.csv")
+        logger = can.CSVWriter("test time!.csv")
         """
         Creates a notifier object which accepts an array of objects of the can.Listener class
         Whenever it receves a message from bus it calls the Listeners in the array
@@ -201,11 +233,11 @@ def initDictionary():
     dictionary["mppt3BatteryVoltage"] = 0.0
     dictionary["mppt3UnitTemperature"] = 0.0
     dictionary["timeSent"] = 0.0
-
+    dictionary["coordinates"] = (0, 0)
 
 # faulthandler.enable()
 # network settings
-channel = "can0"
+channel = "can1"
 # bitrate = 125000  # 125000 if using can0
 manager = multiprocessing.Manager()
 dictionary = manager.dict()
@@ -227,6 +259,14 @@ try:
     toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
     toDashProcess.daemon = True
     toDashProcess.start()
+    #pr = cProfile.Profile()
+    #pr.enable()
+
+    gpsStuffProcess = multiprocessing.Process(target=gpsStuff)
+    gpsStuffProcess.daemon = True
+    gpsStuffProcess.start()
+
+
     while True:
         if not messageProcess.is_alive():
             messageProcess.terminate()
@@ -249,12 +289,24 @@ try:
             toDashProcess.daemon = True
             toDashProcess.start()
             print("Restarted toDashProcess.")
+    
+        if not gpsStuffProcess.is_alive():
+            gpsStuffProcess.terminate()
+            gpsStuffProcess.join()
+            gpsStuffProcess = multiprocessing.Process(target=gpsStuff)
+            gpsStuffProcess.daemon = True
+            gpsStuffProcess.start()
         time.sleep(.1)
 
 except KeyboardInterrupt:
     print("Keyboard interrupt")
     #print(dict(dictionary))
+    #pr.disable()
     echoProcess.terminate()
     echoProcess.join()
+    #s = io.StringIO()
+    #ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+    #ps.print_stats()
+    #print(s.getvalue())
     print()
     exit()

@@ -29,13 +29,14 @@ def main():
 
         #while amount_received < amount_expected:
         while True:
-            data = sock.recv(32)
+            data = sock.recv(64)
             #amount_received += len(data)
             print ('received "%s"' % data)
 
     finally:
         #print ('closing socket', file=sys.stderr)
         sock.close()
+        #pass
 
 if __name__ == '__main__':
     main()
