@@ -17,10 +17,15 @@ import socket
 import select
 import pynmea2
 import serial
+import RPi.GPIO as gpio
 
 #import cProfile
 #import pstats
 #import io
+
+def GPIOStuff():
+    gpio.setmode(gpio.BCM)
+    gpio.setup(5, GPIO.IN, pull_up_down=gpio.PUD_DOWN)
 
 def toDash(server_address, refresh_rate):
     try:
@@ -58,8 +63,11 @@ def toDash(server_address, refresh_rate):
             # Clean up the connection
             connection.close()
             os.unlink(server_address)
+
 def gpsStuff():
     print("hi")
+    while !os.path.exists(server_address):
+        time.sleep(1)
     ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5)
     print("my")
     for i in range(5):
@@ -125,6 +133,7 @@ def message():
         """
         Creates a notifier object which accepts an array of objects of the can.Listener class
         Whenever it receves a message from bus it calls the Listeners in the array
+
         and lets them handle the message.
         """
         notifier = can.Notifier(bus, [buffRead, logger], timeout=1)
@@ -158,7 +167,6 @@ def message():
             dictionary["timeSent"] = str(datetime.datetime.now())
     # Closes the notifer which closes the Listeners as well
     notifier.stop()
-
 
 def initDictionary():
     dictionary["bpsHighVoltage"] = 0.0
@@ -266,7 +274,6 @@ try:
     gpsStuffProcess.daemon = True
     gpsStuffProcess.start()
 
-
     while True:
         if not messageProcess.is_alive():
             messageProcess.terminate()
@@ -282,6 +289,7 @@ try:
             #echoProcess.daemon = True
             echoProcess.start()
             print("Restarted echoProcess.")
+
         if not toDashProcess.is_alive():
             toDashProcess.terminate()
             toDashProcess.join()
@@ -289,7 +297,7 @@ try:
             toDashProcess.daemon = True
             toDashProcess.start()
             print("Restarted toDashProcess.")
-    
+
         if not gpsStuffProcess.is_alive():
             gpsStuffProcess.terminate()
             gpsStuffProcess.join()
