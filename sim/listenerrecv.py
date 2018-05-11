@@ -64,11 +64,11 @@ def toDash(server_address, refresh_rate):
             connection.close()
             os.unlink(server_address)
 
-def gpsStuff():
+def gpsStuff(server_address):
     print("hi")
-    while !os.path.exists(server_address):
+    while not os.path.exists(server_address):
         time.sleep(1)
-    ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5)
+    ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5) #If it errors out here make sure the GPS is plugged in.
     print("my")
     for i in range(5):
         ser.readline()
@@ -256,23 +256,31 @@ print("CAN RECV test")
 
 try:
 
+    print("messageProcess")
     messageProcess = multiprocessing.Process(target=message)
     messageProcess.daemon = True
     messageProcess.start()
 
+    print("echoProcess")
     echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
     #echoProcess.daemon = True # damonized processes can't spawn child processes
     echoProcess.start()
 
-    toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+    server_address = "/tmp/mySocket" #There are thirteen characters in this string
+
+    print("toDashProcess")
+    toDashProcess = multiprocessing.Process(target=toDash, args=(server_address, 0.5))
     toDashProcess.daemon = True
     toDashProcess.start()
     #pr = cProfile.Profile()
     #pr.enable()
 
-    gpsStuffProcess = multiprocessing.Process(target=gpsStuff)
+    print("gpsStuffProcess")
+    gpsStuffProcess = multiprocessing.Process(target=gpsStuff, args=(server_address,)) #The comma needs to be there. If it is not Python, then will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
     gpsStuffProcess.daemon = True
+    print("before GPS")
     gpsStuffProcess.start()
+    print("after GPS")
 
     while True:
         if not messageProcess.is_alive():
@@ -293,7 +301,7 @@ try:
         if not toDashProcess.is_alive():
             toDashProcess.terminate()
             toDashProcess.join()
-            toDashProcess = multiprocessing.Process(target=toDash, args=("/tmp/mySocket", 0.5))
+            toDashProcess = multiprocessing.Process(target=toDash, args=(server_address, 0.5))
             toDashProcess.daemon = True
             toDashProcess.start()
             print("Restarted toDashProcess.")
@@ -301,7 +309,7 @@ try:
         if not gpsStuffProcess.is_alive():
             gpsStuffProcess.terminate()
             gpsStuffProcess.join()
-            gpsStuffProcess = multiprocessing.Process(target=gpsStuff)
+            gpsStuffProcess = multiprocessing.Process(target=gpsStuff, args=(server_address,))
             gpsStuffProcess.daemon = True
             gpsStuffProcess.start()
         time.sleep(.1)
