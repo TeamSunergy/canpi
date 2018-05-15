@@ -23,9 +23,11 @@ import RPi.GPIO as gpio
 #import pstats
 #import io
 
+
 def GPIOStuff():
     gpio.setmode(gpio.BCM)
     gpio.setup(5, GPIO.IN, pull_up_down=gpio.PUD_DOWN)
+
 
 def toDash(server_address, refresh_rate):
     try:
@@ -36,20 +38,20 @@ def toDash(server_address, refresh_rate):
     # Create a UDS socket
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     # Bind the socket to the port
-    print ('starting up on %s' % server_address, file=sys.stderr)
+    print('starting up on %s' % server_address, file=sys.stderr)
     sock.bind(server_address)
     sock.setblocking(False)
     # Listen for incoming connections
     sock.listen(1)
     while True:
         # Wait for a connection
-        print ('waiting for a connection',  file=sys.stderr)
+        print('waiting for a connection',  file=sys.stderr)
         ready = select.select([sock], [], [], 5)[0]
         if not ready:
             continue
         connection, client_address = sock.accept()
         try:
-            print ('connection from', server_address,  file=sys.stderr) # server_address is hacky
+            print('connection from', server_address,  file=sys.stderr) # server_address is hacky
             # Receive the data in small chunks and retransmit it
             while True:
                 connection.settimeout(5)
@@ -64,33 +66,34 @@ def toDash(server_address, refresh_rate):
             connection.close()
             os.unlink(server_address)
 
+
 def gpsStuff(server_address):
-    print("hi")
     while not os.path.exists(server_address):
         time.sleep(1)
     ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5) #If it errors out here make sure the GPS is plugged in.
-    print("my")
-    for i in range(5):
-        ser.readline()
-    print("name")
+    # for i in range(5):
+    ser.readline()
     map = {"N": 1, "S": -1, "E": 1, "W": -1}
 
     while True:
         try:
             data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
-            print("is")
         except:
             continue
         if str(data).startswith("$GPRMC") and data.data[2] != "" and data.data[4] != "":
-            print(data.data[2] + " " + data.data[4])
-
             lat = float(data.data[2])
             lon = float(data.data[4])
             lat = map[data.data[3]] * (lat // 10**2 + (lat - (lat // 10**2) * 100) / 60)
             lon = map[data.data[5]] * (lon // 10**2 + (lon - (lon // 10**2) * 100) / 60)
-            print("lololololol")
+            print(str(lat) + " " + str(lon))
             dictionary["coordinates"] = (lat, lon)
-    ser.close()
+        elif str(data).startswith("$GPGST") and data.data[6] != "" and data.data[7] != "" and data.data[8] != "":
+            latPrecision = float(data.data[6])
+            lonPrecision = float(data.data[7])
+            heightPrecision = float(data.data[8])
+            print(str(latPrecision) + " " + str(lonPrecision) + " " + str(heightPrecision))
+            dictionary["coordinatesPrecision"] = (latPrecision, lonPrecision, heightPrecision)
+        ser.close()
 
 
 def echo_server(address, sleep_seconds):
@@ -111,6 +114,7 @@ def echo_server(address, sleep_seconds):
         multiprocessing.Process(target=echo_handler, args=(client, sleep_seconds)).start()
         time.sleep(1)
 
+
 def echo_handler(client, sleep_seconds):
     while True:
         print(dictionary)
@@ -121,6 +125,7 @@ def echo_handler(client, sleep_seconds):
         print("Sent user JSON @", datetime.datetime.now())
         print("-=-=-=-=-==-=-==-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
 
+
 def message():
     try:
         # Initalizes can bus
@@ -129,7 +134,7 @@ def message():
         buffRead = can.BufferedReader()
         # Creates a device that logs all canbus messages to a csv file
         # NOTE: encodes data in base64
-        logger = can.CSVWriter("test time!.csv")
+        logger = can.CSVWriter("log.csv")
         """
         Creates a notifier object which accepts an array of objects of the can.Listener class
         Whenever it receves a message from bus it calls the Listeners in the array
@@ -167,6 +172,7 @@ def message():
             dictionary["timeSent"] = str(datetime.datetime.now())
     # Closes the notifer which closes the Listeners as well
     notifier.stop()
+
 
 def initDictionary():
     dictionary["bpsHighVoltage"] = 0.0
@@ -241,7 +247,9 @@ def initDictionary():
     dictionary["mppt3BatteryVoltage"] = 0.0
     dictionary["mppt3UnitTemperature"] = 0.0
     dictionary["timeSent"] = 0.0
-    dictionary["coordinates"] = (0, 0)
+    dictionary["coordinates"] = (0.0, 0.0)
+    dictionary["coordinatesPrecision"] = (0.0, 0.0, 0.0)
+
 
 # faulthandler.enable()
 # network settings
@@ -263,24 +271,22 @@ try:
 
     print("echoProcess")
     echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
-    #echoProcess.daemon = True # damonized processes can't spawn child processes
+    # echoProcess.daemon = True # damonized processes can't spawn child processes
     echoProcess.start()
 
-    server_address = "/tmp/mySocket" #There are thirteen characters in this string
+    server_address = "/tmp/mySocket" # There are thirteen characters in this string
 
     print("toDashProcess")
     toDashProcess = multiprocessing.Process(target=toDash, args=(server_address, 0.5))
     toDashProcess.daemon = True
     toDashProcess.start()
-    #pr = cProfile.Profile()
-    #pr.enable()
+    # pr = cProfile.Profile()
+    # pr.enable()
 
     print("gpsStuffProcess")
     gpsStuffProcess = multiprocessing.Process(target=gpsStuff, args=(server_address,)) #The comma needs to be there. If it is not Python, then will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
     gpsStuffProcess.daemon = True
-    print("before GPS")
     gpsStuffProcess.start()
-    print("after GPS")
 
     while True:
         if not messageProcess.is_alive():
@@ -294,7 +300,7 @@ try:
             echoProcess.terminate()
             echoProcess.join()
             echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
-            #echoProcess.daemon = True
+            # echoProcess.daemon = True
             echoProcess.start()
             print("Restarted echoProcess.")
 
@@ -316,13 +322,13 @@ try:
 
 except KeyboardInterrupt:
     print("Keyboard interrupt")
-    #print(dict(dictionary))
-    #pr.disable()
+    # print(dict(dictionary))
+    # pr.disable()
     echoProcess.terminate()
     echoProcess.join()
-    #s = io.StringIO()
-    #ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
-    #ps.print_stats()
-    #print(s.getvalue())
+    # s = io.StringIO()
+    # ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+    # ps.print_stats()
+    # print(s.getvalue())
     print()
     exit()
