@@ -51,7 +51,8 @@ def toDash(server_address, refresh_rate):
             continue
         connection, client_address = sock.accept()
         try:
-            print('connection from', server_address,  file=sys.stderr) # server_address is hacky
+            print('connection from', server_address,
+                  file=sys.stderr)  # server_address is hacky
             # Receive the data in small chunks and retransmit it
             while True:
                 connection.settimeout(5)
@@ -70,29 +71,35 @@ def toDash(server_address, refresh_rate):
 def gpsStuff(server_address):
     while not os.path.exists(server_address):
         time.sleep(1)
-    ser =  serial.Serial('/dev/ttyUSB0', 4800, timeout=5) #If it errors out here make sure the GPS is plugged in.
+    # If it errors out here make sure the GPS is plugged in.
+    ser = serial.Serial('/dev/ttyUSB0', 4800, timeout=5)
     # for i in range(5):
     ser.readline()
     map = {"N": 1, "S": -1, "E": 1, "W": -1}
 
     while True:
         try:
-            data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
+            data = pynmea2.parse(
+                ser.readline().decode("ascii", errors='replace'))
         except:
             continue
         if str(data).startswith("$GPRMC") and data.data[2] != "" and data.data[4] != "":
             lat = float(data.data[2])
             lon = float(data.data[4])
-            lat = map[data.data[3]] * (lat // 10**2 + (lat - (lat // 10**2) * 100) / 60)
-            lon = map[data.data[5]] * (lon // 10**2 + (lon - (lon // 10**2) * 100) / 60)
+            lat = map[data.data[3]] * \
+                (lat // 10**2 + (lat - (lat // 10**2) * 100) / 60)
+            lon = map[data.data[5]] * \
+                (lon // 10**2 + (lon - (lon // 10**2) * 100) / 60)
             print(str(lat) + " " + str(lon))
             dictionary["coordinates"] = (lat, lon)
         elif str(data).startswith("$GPGST") and data.data[6] != "" and data.data[7] != "" and data.data[8] != "":
             latPrecision = float(data.data[6])
             lonPrecision = float(data.data[7])
             heightPrecision = float(data.data[8])
-            print(str(latPrecision) + " " + str(lonPrecision) + " " + str(heightPrecision))
-            dictionary["coordinatesPrecision"] = (latPrecision, lonPrecision, heightPrecision)
+            print(str(latPrecision) + " " +
+                  str(lonPrecision) + " " + str(heightPrecision))
+            dictionary["coordinatesPrecision"] = (
+                latPrecision, lonPrecision, heightPrecision)
         ser.close()
 
 
@@ -102,8 +109,8 @@ def echo_server(address, sleep_seconds):
     sock.bind(address)
     sock.settimeout(5)
     sock.listen(3)
-    print("Server started. Host: %s Port: %s " % (address[0],address[1]))
-    #sock.setblocking(False)
+    print("Server started. Host: %s Port: %s " % (address[0], address[1]))
+    # sock.setblocking(False)
     count = 0
     while True:
         try:
@@ -111,7 +118,8 @@ def echo_server(address, sleep_seconds):
         except:
             continue
         print('Connection from: ', address)
-        multiprocessing.Process(target=echo_handler, args=(client, sleep_seconds)).start()
+        multiprocessing.Process(target=echo_handler, args=(
+            client, sleep_seconds)).start()
         time.sleep(1)
 
 
@@ -148,8 +156,8 @@ def message():
     while True:
         message = buffRead.get_message()
         if (message is not None):
-            newData = base64.b64encode(message.data) #This is a hack,
-            newData = base64.b64decode(newData)      #convert byte array to bytes
+            newData = base64.b64encode(message.data)  # This is a hack,
+            newData = base64.b64decode(newData)  # convert byte array to bytes
             lst = interpret.interpret(message.arbitration_id, newData)
 
             if (lst == ""):
@@ -157,7 +165,8 @@ def message():
             for x in lst:
                 m = None
                 if x[2] == "float":
-                    m = struct.unpack('f', x[1].to_bytes(4, byteorder="little"))[0]
+                    m = struct.unpack('f', x[1].to_bytes(
+                        4, byteorder="little"))[0]
                 elif x[2] == "boolean":
                     if x[1] == 1:
                         m = True
@@ -166,9 +175,11 @@ def message():
                 elif x[2] == "int":
                     m = x[1]
                 else:
-                    raise RuntimeError("Unknown type received from interpret: " + x[2])
+                    raise RuntimeError(
+                        "Unknown type received from interpret: " + x[2])
                 dictionary[x[0]] = m
-            dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  #TODO - Compute net power
+            dictionary["netPower"] = dictionary["batteryPackCurrent"] * \
+                dictionary["batteryPackInstantaneousVoltage"]  # TODO - Compute net power
             dictionary["timeSent"] = str(datetime.datetime.now())
     # Closes the notifer which closes the Listeners as well
     notifier.stop()
@@ -270,21 +281,25 @@ try:
     messageProcess.start()
 
     print("echoProcess")
-    echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
+    echoProcess = multiprocessing.Process(
+        target=echo_server, args=(('0.0.0.0', 25000), 0.5))
     # echoProcess.daemon = True # damonized processes can't spawn child processes
     echoProcess.start()
 
-    server_address = "/tmp/mySocket" # There are thirteen characters in this string
+    server_address = "/tmp/mySocket"  # There are thirteen characters in this string
 
     print("toDashProcess")
-    toDashProcess = multiprocessing.Process(target=toDash, args=(server_address, 0.5))
+    toDashProcess = multiprocessing.Process(
+        target=toDash, args=(server_address, 0.5))
     toDashProcess.daemon = True
     toDashProcess.start()
     # pr = cProfile.Profile()
     # pr.enable()
 
     print("gpsStuffProcess")
-    gpsStuffProcess = multiprocessing.Process(target=gpsStuff, args=(server_address,)) #The comma needs to be there. If it is not Python, then will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
+    # The comma needs to be there. If it is not Python, then will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
+    gpsStuffProcess = multiprocessing.Process(
+        target=gpsStuff, args=(server_address,))
     gpsStuffProcess.daemon = True
     gpsStuffProcess.start()
 
@@ -299,7 +314,8 @@ try:
         if not echoProcess.is_alive():
             echoProcess.terminate()
             echoProcess.join()
-            echoProcess = multiprocessing.Process(target=echo_server, args=(('0.0.0.0',25000), 0.5))
+            echoProcess = multiprocessing.Process(
+                target=echo_server, args=(('0.0.0.0', 25000), 0.5))
             # echoProcess.daemon = True
             echoProcess.start()
             print("Restarted echoProcess.")
@@ -307,7 +323,8 @@ try:
         if not toDashProcess.is_alive():
             toDashProcess.terminate()
             toDashProcess.join()
-            toDashProcess = multiprocessing.Process(target=toDash, args=(server_address, 0.5))
+            toDashProcess = multiprocessing.Process(
+                target=toDash, args=(server_address, 0.5))
             toDashProcess.daemon = True
             toDashProcess.start()
             print("Restarted toDashProcess.")
@@ -315,7 +332,8 @@ try:
         if not gpsStuffProcess.is_alive():
             gpsStuffProcess.terminate()
             gpsStuffProcess.join()
-            gpsStuffProcess = multiprocessing.Process(target=gpsStuff, args=(server_address,))
+            gpsStuffProcess = multiprocessing.Process(
+                target=gpsStuff, args=(server_address,))
             gpsStuffProcess.daemon = True
             gpsStuffProcess.start()
         time.sleep(.1)
