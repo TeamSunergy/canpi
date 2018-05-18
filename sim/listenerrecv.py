@@ -18,16 +18,36 @@ import select
 import pynmea2
 import serial
 import RPi.GPIO as gpio
+import smbus
 
 #import cProfile
 #import pstats
 #import io
 
+def GPIOHelper(pinNum):
+	prev = dictionary["gpio" + str(pinNum)]
+	curr = gpio.input(pinNum)
+	if prev != curr:
+		#if curr == 0:
+		#	print("GPIO pin " + str(pinNum) + " is LOW")
+		#else:
+		#	print("GPIO pin " + str(pinNum) + " is High")
+		dictionary["gpio" + str(pinNum)] = curr
 
-def GPIOStuff():
-    gpio.setmode(gpio.BCM)
-    gpio.setup(5, GPIO.IN, pull_up_down=gpio.PUD_DOWN)
-
+def GPIO():
+    dictionary["gpio5"] = gpio.input(5)
+    dictionary["gpio6"] = gpio.input(6)
+    dictionary["gpio12"] = gpio.input(12)
+    dictionary["gpio13"] = gpio.input(13)
+    dictionary["gpio19"] = gpio.input(19)
+    dictionary["gpio26"] = gpio.input(26)
+    while True: #TODO: Change this to use pin change interupts instead of polling
+        GPIOHelper(5)
+        GPIOHelper(6)
+        GPIOHelper(12)
+        GPIOHelper(13)
+        GPIOHelper(19)
+        GPIOHelper(26)
 
 def toDash(server_address, refresh_rate):
     try:
@@ -260,7 +280,21 @@ def initDictionary():
     dictionary["timeSent"] = 0.0
     dictionary["coordinates"] = (0.0, 0.0)
     dictionary["coordinatesPrecision"] = (0.0, 0.0, 0.0)
+    dictionary["gpio5"] = 0
+    dictionary["gpio6"] = 0
+    dictionary["gpio12"] = 0
+    dictionary["gpio13"] = 0
+    dictionary["gpio19"] = 0
+    dictionary["gpio26"] = 0
 
+gpio.setmode(gpio.BCM)
+# BLATS
+gpio.setup(5, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+gpio.setup(6, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+gpio.setup(12, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+gpio.setup(13, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+gpio.setup(19, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+gpio.setup(26, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 
 # faulthandler.enable()
 # network settings
@@ -274,6 +308,11 @@ print(str(dict(dictionary)))
 print("CAN RECV test")
 
 try:
+
+    print("GPIOProcess")
+    GPIOProcess = multiprocessing.Process(target=GPIO)
+    GPIOProcess.daemon = True
+    GPIOProcess.start()
 
     print("messageProcess")
     messageProcess = multiprocessing.Process(target=message)
@@ -304,6 +343,13 @@ try:
     gpsStuffProcess.start()
 
     while True:
+        if not GPIOProcess.is_alive():
+            GPIOProcess.terminate()
+            GPIOProcess.join()
+            GPIOProcess = multiprocessing.Process(target=GPIO)
+            GPIOProcess.daemon = True
+            GPIOProcess.start()
+            print("Restarted GPIOProcess.")
         if not messageProcess.is_alive():
             messageProcess.terminate()
             messageProcess.join()
@@ -340,7 +386,7 @@ try:
 
 except KeyboardInterrupt:
     print("Keyboard interrupt")
-    # print(dict(dictionary))
+    #print(dict(dictionary))
     # pr.disable()
     echoProcess.terminate()
     echoProcess.join()
@@ -350,3 +396,5 @@ except KeyboardInterrupt:
     # print(s.getvalue())
     print()
     exit()
+
+
