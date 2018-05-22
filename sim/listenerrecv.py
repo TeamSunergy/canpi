@@ -28,13 +28,12 @@ def GPIOHelper(pinNum):
 	prev = dictionary["gpio" + str(pinNum)]
 	curr = gpio.input(pinNum)
 	if prev != curr:
-		#if curr == 0:
-		#	print("GPIO pin " + str(pinNum) + " is LOW")
-		#else:
-		#	print("GPIO pin " + str(pinNum) + " is High")
 		dictionary["gpio" + str(pinNum)] = curr
 
-def GPIO():
+# GPIO
+# Reads the voltage from the GPIO pins and puts
+#  their state (high = 1 and low = 0) into the dictionary.
+def GPIO(): 
     dictionary["gpio5"] = gpio.input(5)
     dictionary["gpio6"] = gpio.input(6)
     dictionary["gpio12"] = gpio.input(12)
@@ -49,6 +48,9 @@ def GPIO():
         GPIOHelper(19)
         GPIOHelper(26)
 
+# toDash
+# Sends the dictionary to the Dash UI.
+# 
 def toDash(server_address, refresh_rate):
     try:
         os.unlink(server_address)
@@ -87,7 +89,9 @@ def toDash(server_address, refresh_rate):
             connection.close()
             os.unlink(server_address)
 
-
+# gpsStuff
+# Reads the position from the GPS receiver and
+#  puts it into the dictionary.
 def gpsStuff(server_address):
     while not os.path.exists(server_address):
         time.sleep(1)
@@ -122,7 +126,9 @@ def gpsStuff(server_address):
                 latPrecision, lonPrecision, heightPrecision)
         ser.close()
 
-
+# echo_server
+# Waits for a client to connect. When one does
+#  spawn an echo_handler process for it.
 def echo_server(address, sleep_seconds):
     sock = socket.socket(AF_INET, SOCK_STREAM)
     #sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -142,7 +148,9 @@ def echo_server(address, sleep_seconds):
             client, sleep_seconds)).start()
         time.sleep(1)
 
-
+# echo_handler
+# Sends the client the dictionary every so many seconds.
+# 
 def echo_handler(client, sleep_seconds):
     while True:
         print(dictionary)
@@ -153,7 +161,9 @@ def echo_handler(client, sleep_seconds):
         print("Sent user JSON @", datetime.datetime.now())
         print("-=-=-=-=-==-=-==-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
 
-
+# message
+# Reads messages from the CAN bus, lets the c module
+#  interpret them, then puts them into the dictionary. 
 def message():
     try:
         # Initalizes can bus
@@ -177,7 +187,7 @@ def message():
         message = buffRead.get_message()
         if (message is not None):
             newData = base64.b64encode(message.data)  # This is a hack,
-            newData = base64.b64decode(newData)  # convert byte array to bytes
+            newData = base64.b64decode(newData)  # convert byte array to bytes.
             lst = interpret.interpret(message.arbitration_id, newData)
 
             if (lst == ""):
@@ -195,16 +205,17 @@ def message():
                 elif x[2] == "int":
                     m = x[1]
                 else:
-                    raise RuntimeError(
-                        "Unknown type received from interpret: " + x[2])
+                    raise RuntimeError("Unknown type received from interpret: " + x[2])
                 dictionary[x[0]] = m
-            dictionary["netPower"] = dictionary["batteryPackCurrent"] * \
-                dictionary["batteryPackInstantaneousVoltage"]  # TODO - Compute net power
+            dictionary["netPower"] = dictionary["batteryPackCurrent"] * dictionary["batteryPackInstantaneousVoltage"]  # TODO - Compute net power
             dictionary["timeSent"] = str(datetime.datetime.now())
     # Closes the notifer which closes the Listeners as well
     notifier.stop()
 
-
+# initDictionary
+# Initialize the dictionary so clients
+#  don't error out when a value has not been
+#  put in yet.
 def initDictionary():
     dictionary["bpsHighVoltage"] = 0.0
     dictionary["bpsLowVoltage"] = 0.0
@@ -286,9 +297,14 @@ def initDictionary():
     dictionary["gpio13"] = 0
     dictionary["gpio19"] = 0
     dictionary["gpio26"] = 0
+    dictionary["GPIORestarted"] = None
+    dictionary["messageRestarted"] = None
+    dictionary["echoRestarted"] = None
+    dictionary["toDashRestarted"] = None
+    dictionary["gpsStuffRestarted"] = None
 
+#Set up GPIO
 gpio.setmode(gpio.BCM)
-# BLATS
 gpio.setup(5, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 gpio.setup(6, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 gpio.setup(12, gpio.IN, pull_up_down=gpio.PUD_DOWN)
@@ -296,19 +312,22 @@ gpio.setup(13, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 gpio.setup(19, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 gpio.setup(26, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 
-# faulthandler.enable()
 # network settings
 channel = "can1"
 # bitrate = 125000  # 125000 if using can0
+
+# Set up multiprocessing and the dictionary
 manager = multiprocessing.Manager()
 dictionary = manager.dict()
-
 initDictionary()
 print(str(dict(dictionary)))
+
 print("CAN RECV test")
 
 try:
+   # Spawn all of the processes
 
+    # TODO: Too much repeated code. Find a way to stick this functionality in a function and use that.
     print("GPIOProcess")
     GPIOProcess = multiprocessing.Process(target=GPIO)
     GPIOProcess.daemon = True
@@ -322,10 +341,10 @@ try:
     print("echoProcess")
     echoProcess = multiprocessing.Process(
         target=echo_server, args=(('0.0.0.0', 25000), 0.5))
-    # echoProcess.daemon = True # damonized processes can't spawn child processes
+    # echoProcess.daemon = True # daemonized processes can't spawn child processes
     echoProcess.start()
 
-    server_address = "/tmp/mySocket"  # There are thirteen characters in this string
+    server_address = "/tmp/mySocket"
 
     print("toDashProcess")
     toDashProcess = multiprocessing.Process(
@@ -336,20 +355,25 @@ try:
     # pr.enable()
 
     print("gpsStuffProcess")
-    # The comma needs to be there. If it is not Python, then will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
+    # The comma needs to be there. If it is not, then Python will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
     gpsStuffProcess = multiprocessing.Process(
         target=gpsStuff, args=(server_address,))
     gpsStuffProcess.daemon = True
     gpsStuffProcess.start()
 
+    # If a process dies, then respawn it.
     while True:
-        if not GPIOProcess.is_alive():
+        curTime = datetime.datetime.now()
+        
+        if not GPIOProcess.is_alive(): #There must be a less verbose way of doing this
             GPIOProcess.terminate()
             GPIOProcess.join()
             GPIOProcess = multiprocessing.Process(target=GPIO)
             GPIOProcess.daemon = True
             GPIOProcess.start()
             print("Restarted GPIOProcess.")
+            dictionary["GPIORestarted"] = curTime
+
         if not messageProcess.is_alive():
             messageProcess.terminate()
             messageProcess.join()
@@ -357,6 +381,8 @@ try:
             messageProcess.daemon = True
             messageProcess.start()
             print("Restarted messageProcess.")
+            dictionary["messageRestarted"] = curTime
+
         if not echoProcess.is_alive():
             echoProcess.terminate()
             echoProcess.join()
@@ -365,6 +391,7 @@ try:
             # echoProcess.daemon = True
             echoProcess.start()
             print("Restarted echoProcess.")
+            dictionary["echoRestarted"] = curTime
 
         if not toDashProcess.is_alive():
             toDashProcess.terminate()
@@ -374,6 +401,7 @@ try:
             toDashProcess.daemon = True
             toDashProcess.start()
             print("Restarted toDashProcess.")
+            dictionary["toDashRestarted"] = curTime
 
         if not gpsStuffProcess.is_alive():
             gpsStuffProcess.terminate()
@@ -382,6 +410,9 @@ try:
                 target=gpsStuff, args=(server_address,))
             gpsStuffProcess.daemon = True
             gpsStuffProcess.start()
+            print("Restarted gpsStuffProcess.")
+            dictionary["gpsStuffRestarted"] = curTime
+            
         time.sleep(.1)
 
 except KeyboardInterrupt:
