@@ -40,6 +40,7 @@ def GPIO():
     dictionary["gpio13"] = gpio.input(13)
     dictionary["gpio19"] = gpio.input(19)
     dictionary["gpio26"] = gpio.input(26)
+
     while True: #TODO: Change this to use pin change interupts instead of polling
         GPIOHelper(5)
         GPIOHelper(6)
@@ -53,7 +54,7 @@ def GPIO():
 # 
 def toDash(server_address, refresh_rate):
     try:
-        os.unlink(server_address)
+                os.unlink(server_address)
     except OSError:
         if os.path.exists(server_address):
             raise
@@ -299,9 +300,26 @@ def initDictionary():
     dictionary["gpio26"] = 0
     dictionary["GPIORestarted"] = None
     dictionary["messageRestarted"] = None
-    dictionary["echoRestarted"] = None
+    dictionary["echo_serverRestarted"] = None
     dictionary["toDashRestarted"] = None
     dictionary["gpsStuffRestarted"] = None
+
+def spawnProcess(target, args, daemon):
+    if args == None: 
+        process = multiprocessing.Process(target=eval(target))
+    else:
+        process = multiprocessing.Process(target=eval(target), args=args)
+
+    process.daemon = daemon
+    process.start()
+    return process
+
+def restartProcess(process, target, args, daemon):
+    process.terminate()
+    process.join()
+    process = spawnProcess(target, args, daemon)
+    dictionary[target + "Restarted"] = datetime.datetime.now()
+    return process
 
 #Set up GPIO
 gpio.setmode(gpio.BCM)
@@ -315,6 +333,7 @@ gpio.setup(26, gpio.IN, pull_up_down=gpio.PUD_DOWN)
 # network settings
 channel = "can1"
 # bitrate = 125000  # 125000 if using can0
+server_address = "/tmp/mySocket"
 
 # Set up multiprocessing and the dictionary
 manager = multiprocessing.Manager()
@@ -327,91 +346,39 @@ print("CAN RECV test")
 try:
    # Spawn all of the processes
 
-    # TODO: Too much repeated code. Find a way to stick this functionality in a function and use that.
     print("GPIOProcess")
-    GPIOProcess = multiprocessing.Process(target=GPIO)
-    GPIOProcess.daemon = True
-    GPIOProcess.start()
+    GPIOProcess = spawnProcess("GPIO",None,True)
 
     print("messageProcess")
-    messageProcess = multiprocessing.Process(target=message)
-    messageProcess.daemon = True
-    messageProcess.start()
+    messageProcess = spawnProcess("message",None,True)
 
     print("echoProcess")
-    echoProcess = multiprocessing.Process(
-        target=echo_server, args=(('0.0.0.0', 25000), 0.5))
-    # echoProcess.daemon = True # daemonized processes can't spawn child processes
-    echoProcess.start()
-
-    server_address = "/tmp/mySocket"
+    echoProcess = spawnProcess("echo_server",(('0.0.0.0', 25000), 0.5), False) # daemonized processes can't spawn child processes
 
     print("toDashProcess")
-    toDashProcess = multiprocessing.Process(
-        target=toDash, args=(server_address, 0.5))
-    toDashProcess.daemon = True
-    toDashProcess.start()
-    # pr = cProfile.Profile()
-    # pr.enable()
+    toDashProcess = spawnProcess("toDash",(server_address, 0.5),True)
 
     print("gpsStuffProcess")
-    # The comma needs to be there. If it is not, then Python will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
-    gpsStuffProcess = multiprocessing.Process(
-        target=gpsStuff, args=(server_address,))
-    gpsStuffProcess.daemon = True
-    gpsStuffProcess.start()
+    # The comma needs to be in the argument. If it is not, then Python will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
+    gpsStuffProcess = spawnProcess("gpsStuff",(server_address,),True)
 
     # If a process dies, then respawn it.
     while True:
-        curTime = datetime.datetime.now()
         
-        if not GPIOProcess.is_alive(): #There must be a less verbose way of doing this
-            GPIOProcess.terminate()
-            GPIOProcess.join()
-            GPIOProcess = multiprocessing.Process(target=GPIO)
-            GPIOProcess.daemon = True
-            GPIOProcess.start()
-            print("Restarted GPIOProcess.")
-            dictionary["GPIORestarted"] = curTime
+        if not GPIOProcess.is_alive():
+            GPIOProcess = restartProcess(GPIOProcess,"GPIO",None,True)
 
         if not messageProcess.is_alive():
-            messageProcess.terminate()
-            messageProcess.join()
-            messageProcess = multiprocessing.Process(target=message)
-            messageProcess.daemon = True
-            messageProcess.start()
-            print("Restarted messageProcess.")
-            dictionary["messageRestarted"] = curTime
+            messageProcess = restartProcess(messageProcess,"message",None,True)
 
         if not echoProcess.is_alive():
-            echoProcess.terminate()
-            echoProcess.join()
-            echoProcess = multiprocessing.Process(
-                target=echo_server, args=(('0.0.0.0', 25000), 0.5))
-            # echoProcess.daemon = True
-            echoProcess.start()
-            print("Restarted echoProcess.")
-            dictionary["echoRestarted"] = curTime
+            echoProcess = restartProcess(echoProcess,"echo_server",(('0.0.0.0', 25000), 0.5), False)
 
         if not toDashProcess.is_alive():
-            toDashProcess.terminate()
-            toDashProcess.join()
-            toDashProcess = multiprocessing.Process(
-                target=toDash, args=(server_address, 0.5))
-            toDashProcess.daemon = True
-            toDashProcess.start()
-            print("Restarted toDashProcess.")
-            dictionary["toDashRestarted"] = curTime
+            toDashProcess = restartProcess(toDashProcess,"toDash",(server_address, 0.5),True)
 
         if not gpsStuffProcess.is_alive():
-            gpsStuffProcess.terminate()
-            gpsStuffProcess.join()
-            gpsStuffProcess = multiprocessing.Process(
-                target=gpsStuff, args=(server_address,))
-            gpsStuffProcess.daemon = True
-            gpsStuffProcess.start()
-            print("Restarted gpsStuffProcess.")
-            dictionary["gpsStuffRestarted"] = curTime
+            gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
             
         time.sleep(.1)
 
