@@ -9,7 +9,10 @@ for i in range(10):
 map = {"N": 1, "S": -1, "E": 1, "W": -1}
 
 while True:
-    data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
+    try:
+        data = pynmea2.parse(ser.readline().decode("ascii", errors='replace'))
+    except:
+        continue
     if str(data).startswith("$GPRMC") and data.data[2] != "" and data.data[4] != "":
         print(data.data[2] + " " + data.data[4])
         lat = float(data.data[2])

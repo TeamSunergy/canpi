@@ -15,7 +15,7 @@ import signal
 import multiprocessing
 import socket
 import select
-import pynmea2
+#import pynmea2
 import serial
 import RPi.GPIO as gpio
 import smbus
@@ -289,6 +289,7 @@ def initDictionary():
     dictionary["mppt3ArrayCurrent"] = 0.0
     dictionary["mppt3BatteryVoltage"] = 0.0
     dictionary["mppt3UnitTemperature"] = 0.0
+    dictionary["mpptTotalNetPower"] = 0.0
     dictionary["timeSent"] = 0.0
     dictionary["coordinates"] = (0.0, 0.0)
     dictionary["coordinatesPrecision"] = (0.0, 0.0, 0.0)
