@@ -33,7 +33,7 @@ def GPIOHelper(pinNum):
 # GPIO
 # Reads the voltage from the GPIO pins and puts
 #  their state (high = 1 and low = 0) into the dictionary.
-def GPIO(): 
+def GPIO():
     dictionary["gpio5"] = gpio.input(5)
     dictionary["gpio6"] = gpio.input(6)
     dictionary["gpio12"] = gpio.input(12)
@@ -51,7 +51,7 @@ def GPIO():
 
 # toDash
 # Sends the dictionary to the Dash UI.
-# 
+#
 def toDash(server_address, refresh_rate):
     try:
                 os.unlink(server_address)
@@ -151,7 +151,7 @@ def echo_server(address, sleep_seconds):
 
 # echo_handler
 # Sends the client the dictionary every so many seconds.
-# 
+#
 def echo_handler(client, sleep_seconds):
     while True:
         print(dictionary)
@@ -164,7 +164,7 @@ def echo_handler(client, sleep_seconds):
 
 # message
 # Reads messages from the CAN bus, lets the c module
-#  interpret them, then puts them into the dictionary. 
+#  interpret them, then puts them into the dictionary.
 def message():
     try:
         # Initalizes can bus
@@ -212,6 +212,28 @@ def message():
             dictionary["timeSent"] = str(datetime.datetime.now())
     # Closes the notifer which closes the Listeners as well
     notifier.stop()
+
+# log_data
+# Log the dictionary data to CSV
+# Takes in the current state of the dictionary as an arguemnt (data), 
+# prints a header to the file, and then a row for each dictionary key.
+def log_data(data):
+	while True:
+		current_date = datetime.datetime.now()
+		logger = csv.writer(open('./log/' + current_date.strftime("%b_%d_%Y_%H:%M:%S") + ".csv", "w"), delimiter=",",
+			quotechar="|", quoting=csv.QUOTE_MINIMAL)
+
+		# Log Header
+		logger.writerow(["# APPTEL LOG"])
+		logger.writerow(["# Device: CANPi"])
+		logger.writerow(["# Date: " + current_date.strftime("%b %d %Y %r")])
+		logger.writerow("#")
+		logger.writerow(["data_name"] + ["value"])
+
+		# Log each variable name and value as a row
+		for key in data:
+		       logger.writerow([key] + [data[key]])
+
 
 # initDictionary
 # Initialize the dictionary so clients
@@ -306,7 +328,7 @@ def initDictionary():
     dictionary["gpsStuffRestarted"] = None
 
 def spawnProcess(target, args, daemon):
-    if args == None: 
+    if args == None:
         process = multiprocessing.Process(target=eval(target))
     else:
         process = multiprocessing.Process(target=eval(target), args=args)
@@ -363,9 +385,13 @@ try:
     # The comma needs to be in the argument. If it is not, then Python will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
     gpsStuffProcess = spawnProcess("gpsStuff",(server_address,),True)
 
+    print("logDataProcess")
+    logDataProcess = spawnProcess("log_data", dict(dictionary), True)
+
+
     # If a process dies, then respawn it.
     while True:
-        
+
         if not GPIOProcess.is_alive():
             GPIOProcess = restartProcess(GPIOProcess,"GPIO",None,True)
 
@@ -380,7 +406,7 @@ try:
 
         if not gpsStuffProcess.is_alive():
             gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
-            
+
         time.sleep(.1)
 
 except KeyboardInterrupt:
@@ -395,5 +421,3 @@ except KeyboardInterrupt:
     # print(s.getvalue())
     print()
     exit()
-
-
