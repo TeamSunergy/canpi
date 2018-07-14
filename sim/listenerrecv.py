@@ -382,9 +382,9 @@ try:
     print("toDashProcess")
     toDashProcess = spawnProcess("toDash",(server_address, 0.5),True)
 
-    print("gpsStuffProcess")
+    #print("gpsStuffProcess")
     # The comma needs to be in the argument. If it is not, then Python will think it is not a tuple and instead complain that there are too many arguments.  #mySocket is still in /tmp even after the program closes. Is that correct behavior?
-    gpsStuffProcess = spawnProcess("gpsStuff",(server_address,),True)
+    #gpsStuffProcess = spawnProcess("gpsStuff",(server_address,),True)
 
     print("logDataProcess")
     logDataProcess = spawnProcess("log_data", None, True)
@@ -405,8 +405,8 @@ try:
         if not toDashProcess.is_alive():
             toDashProcess = restartProcess(toDashProcess,"toDash",(server_address, 0.5),True)
 
-        if not gpsStuffProcess.is_alive():
-            gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
+       # if not gpsStuffProcess.is_alive():
+       #     gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
 
 		if not gpsStuffProcess.is_alive():
             gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
