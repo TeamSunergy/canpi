@@ -215,10 +215,11 @@ def message():
 
 # log_data
 # Log the dictionary data to CSV
-# Takes in the current state of the dictionary as an arguemnt (data), 
+# Takes in the current state of the dictionary as an arguemnt (data),
 # prints a header to the file, and then a row for each dictionary key.
-def log_data(data):
+def log_data():
 	while True:
+		data = dict(dictionary)
 		current_date = datetime.datetime.now()
 		logger = csv.writer(open('./log/' + current_date.strftime("%b_%d_%Y_%H:%M:%S") + ".csv", "w"), delimiter=",",
 			quotechar="|", quoting=csv.QUOTE_MINIMAL)
@@ -385,7 +386,7 @@ try:
     gpsStuffProcess = spawnProcess("gpsStuff",(server_address,),True)
 
     print("logDataProcess")
-    logDataProcess = spawnProcess("log_data", dict(dictionary), True)
+    logDataProcess = spawnProcess("log_data", None, True)
 
 
     # If a process dies, then respawn it.
@@ -404,6 +405,9 @@ try:
             toDashProcess = restartProcess(toDashProcess,"toDash",(server_address, 0.5),True)
 
         if not gpsStuffProcess.is_alive():
+            gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
+
+		if not gpsStuffProcess.is_alive():
             gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
 
         time.sleep(.1)
