@@ -408,8 +408,8 @@ try:
        # if not gpsStuffProcess.is_alive():
        #     gpsStuffProcess = restartProcess(gpsStuffProcess,"gpsStuff",(server_address,),True)
 
-		if not logDataProcess.is_alive():
-            logDataProcess = restartProcess(logDataProcess,"log_data",None,True)
+        if not logDataProcess.is_alive():
+           logDataProcess = restartProcess(logDataProcess,"log_data",None,True)
 
         time.sleep(.1)
 
